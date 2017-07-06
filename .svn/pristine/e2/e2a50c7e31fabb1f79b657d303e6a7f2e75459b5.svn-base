@@ -1,0 +1,220 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using NordCar.Carla.Data.EF.Repository;
+using SOSService.BootStrapper;
+using AutoMapper;
+using NordCar.Carla.Data.Repository;
+using SOSService.Data;
+
+namespace SOSService
+{
+   
+    public class SOSService : ISOSService
+    {
+        private const string SOSVersionString = "v0.0";
+        private const int customerNo = 826164;
+        private static DateTime _serverBuildTime = DateTime.MinValue;
+        private ICustomerAgreement custAgreement;
+        private IECAPIManagerRepository ecAPIManager;
+
+        public SOSService(ICustomerAgreement customerAgreement, IECAPIManagerRepository ecAPIManagerRepository)
+        {
+            this.custAgreement = customerAgreement;
+            this.ecAPIManager = ecAPIManagerRepository;
+
+            var bs = new Bootstrapper();
+            bs.Initialize();
+        }
+
+        private static DateTime ServerBuildTime
+        {
+            get
+            {
+                if (_serverBuildTime == DateTime.MinValue)
+                {
+                    var assembly = Assembly.GetExecutingAssembly();
+                    var fileInfo = new FileInfo(assembly.Location);
+                    _serverBuildTime = fileInfo.LastWriteTime;
+                }
+                return _serverBuildTime;
+            }
+        }
+
+
+        public string Version()
+        {
+            return string.Format("{2} ({0}, {1})", Environment.MachineName, ServerBuildTime, SOSVersionString);
+        }
+
+        public IEnumerable<Agreement> GetAgreements()
+        {
+            var data = custAgreement.GetCustomerAgreement(customerNo);
+            return Mapper.Map<List<NordCar.Carla.Data.EF.Entities.customerAgreement>, List<Agreement>>(data);
+        }
+
+      
+        public IEnumerable<Agreement> GetReservations()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// SetRemarks , return all as string.
+        /// </summary>
+        /// <param name="rental"></param>
+        /// <returns></returns>
+        private string SetRemarks(Rental rental)
+        {
+            StringBuilder strb = new StringBuilder();
+            strb.AppendLine(string.Format("EC-Info:{0}", rental.ECDepartmentInfo));
+            strb.AppendLine(string.Format("SOS-Info:{0}", rental.SOSCustomerInfo));
+            strb.AppendLine(string.Format("Vinterdæk:{0}", rental.WinterTires ? "Ja" : "Nej"));
+            strb.AppendLine(string.Format("Automatik:{0}", rental.AutomaticGear ? "Ja" : "Nej" ));
+            strb.AppendLine(string.Format("Træk:{0}", rental.Towbar ? "Ja" : "Nej"));
+            strb.AppendLine(string.Format("Barnestol:{0}", rental.ChilSeat ? "Ja" : "Nej"));
+            strb.AppendLine(string.Format("GPS:{0}", rental.GPS ? "Ja" : "Nej"));
+            strb.AppendLine(string.Format("Ekstra chauffør:{0}", rental.ExtraDriver ? "Ja" : "Nej"));
+            strb.AppendLine(string.Format("Depositum brændstof:{0}", rental.FuelDeposit ? "Ja" : "Nej"));
+            
+            strb.AppendLine(string.Format("Afhentning:{0}", rental.Pickup ? "Ja" : "Nej"));
+            if (rental.Pickup)
+            {
+                strb.AppendLine(string.Format("Gade:{0}", rental.PickupAdress.Street));
+                strb.AppendLine(string.Format("By:{0}", rental.PickupAdress.City));
+                strb.AppendLine(string.Format("Postnr:{0}", rental.PickupAdress.ZipCode));
+            }
+            
+            strb.AppendLine(string.Format("Levering:{0}", rental.Delivery ? "Ja" : "Nej"));
+            if (rental.Delivery)
+            {
+                strb.AppendLine(string.Format("Gade:{0}", rental.DeliveryAdress.Street));
+                strb.AppendLine(string.Format("By:{0}", rental.DeliveryAdress.City));
+                strb.AppendLine(string.Format("Postnr:{0}", rental.DeliveryAdress.ZipCode));
+            }
+            
+            strb.AppendLine(string.Format("Bilmærke:{0}", rental.CarBrand));
+            strb.AppendLine(string.Format("Model:{0}", rental.CarModel));
+
+
+            return strb.ToString();
+        }
+      
+
+
+        public IEnumerable<Location> GetStations()
+        {
+            var bs = new NordCar.Carla.Data.Entities.BasicStructure() { BookTypes = NordCar.Carla.Data.Entities.BookTypes.SOS, CustomerId = customerNo.ToString(), FunctionId = NordCar.Carla.Data.Entities.FunctionList.GetLocations };
+           
+            var data = ecAPIManager.GetLocations(bs);
+
+            if (data.Item1.Succes)
+            {
+                try
+                {
+                    var data2 = Mapper.Map<List<NordCar.Carla.Data.Entities.EC.Location>, List<Location>>(data.Item2);
+                     return data2.ToList();
+                }
+                catch (System.Exception e)
+                {
+                    string h = e.ToString();
+                    return null;
+                }
+              
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public LocationDetail GetStationDetails(int stationNo)
+        {
+            var bs = new NordCar.Carla.Data.Entities.BasicStructure() { BookTypes = NordCar.Carla.Data.Entities.BookTypes.SOS, CustomerId = customerNo.ToString(), FunctionId = NordCar.Carla.Data.Entities.FunctionList.GetLocationDetails };
+           
+            var data = ecAPIManager.GetLocationDetails(bs,stationNo.ToString(),DateTime.Now, 120);
+
+            if (data.Item1.Succes)
+            {
+                try
+                {
+                    var data2 = Mapper.Map<NordCar.Carla.Data.Entities.EC.LocationDetail, LocationDetail>(data.Item2);
+                     return data2;
+                }
+                catch (System.Exception e)
+                {
+                    string h = e.ToString();
+                    return null;
+                }
+              
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+          public void MakeReservation(Reservation reservation)
+          {
+            var bs = new NordCar.Carla.Data.Entities.BasicStructure() { BookTypes = NordCar.Carla.Data.Entities.BookTypes.SOS, CustomerId = customerNo.ToString(), FunctionId = NordCar.Carla.Data.Entities.FunctionList.MakeReservation };
+           
+            
+            
+            if (reservation.ECContractNumer == "" && reservation.ECReservationNumer == "")
+            {
+                
+                 //New Reservation
+                var newRes = new NordCar.Carla.Data.Entities.EC.Reservation()
+                {
+                    Gender = "",
+                    FirstName = reservation.driver.Name,
+                    LastName = reservation.driver.Name,
+                    Address = reservation.driver.address.Street,
+                    City = reservation.driver.address.City,
+                    PostCode = reservation.driver.address.ZipCode,
+                    Country = reservation.driver.address.Country,
+                    PhoneNumber = reservation.driver.Phone,
+                    Remarks = SetRemarks(reservation.rental),
+                    Address2 = "",
+                    Address3 = "",
+                    BirthDay = "",
+                    Email = "",
+                    FlightNo = "",
+                    paymentType = "0",
+                    BookStatus = 0,
+                    ProductId = reservation.AgreementId.ToString(),
+                    Title = "",
+                    PickDropInfo = new NordCar.Carla.Data.Entities.EC.PickDropInfo()
+                    {
+                        PickUp = new NordCar.Carla.Data.Entities.EC.Trip() { LocationId = reservation.rental.StationOutId.ToString(), Date = reservation.rental.DateOut, Time = reservation.rental.TimeOut },
+                        DropOff = new NordCar.Carla.Data.Entities.EC.Trip() { LocationId = "", Date = reservation.rental.DateIn, Time = reservation.rental.TimeIn }
+                    },
+                    Extra = null//new NordCar.Carla.Data.Entities.EC.SelectedExtras() { Insurance = null, Mileage = null, RecommendedExtras = null}
+                };
+
+                 var data = ecAPIManager.MakeReservation(bs,newRes);
+
+            if (data.Item1.Succes)
+            {
+               
+                                string h = "";
+              
+    
+            }
+            else
+            { 
+                //Change reservation-contract
+                string h = "";
+            }
+           
+        }
+    
+        }
+
+        
+    }
+}

@@ -1,0 +1,1081 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Web.Http;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NordCar.WebAPI;
+using NordCar.WebAPI.Controllers;
+using NordCar.Carla.Data.Implementation;
+using NordCar.WebAPI.Models;
+using System.Web.Http.Results;
+using System.IO;
+
+namespace NordCar.WebAPI.Tests.Controllers
+{
+    [TestClass]
+    public class ECAPIControllerTest
+    {
+        private ECController controller = null;
+
+        [TestInitialize]
+        public void init()
+        {
+            //Arrange
+            string ip = "192.168.16.98";
+            int port = 1074;
+            string logfile = "test.log";
+
+            var rep = new ECAPIManagerRepository(ip, port, logfile);
+            controller = new ECController(rep);
+            controller.Request = new HttpRequestMessage();
+            controller.Configuration = new HttpConfiguration();
+        
+        }
+
+        #region 0 GetVersion
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetVersion()
+        {
+            //Act
+            var response = controller.GetVersion();
+            //Assert
+             Assert.IsNotNull(response);
+        }
+        #endregion
+
+        #region 24 GetLocations
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetLocations_All()
+        {
+            //Act
+            var response = controller.GetLocations("ECBOOK");
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        /// <summary>
+        /// Test_2
+        /// </summary>
+        [TestMethod]
+        public void GetLocations_Country_CarGroupId()
+        {
+            //Act
+            var response = controller.GetLocations("ECBOOK","US","X3");
+            //Assert
+            Assert.IsNotNull(response);
+        }
+        #endregion
+
+        #region 25 GetLocationDetails
+        /// <summary>
+        /// Der er problemmer med station 7 ikke returnnere fejlmeddelelser.
+        /// </summary>
+        [TestMethod]
+        public void GetLocationDetails_7()
+        {
+            //Act
+            var response = controller.GetLocationDetails("ECBOOK","7");
+            //Assert
+            Assert.IsNotNull(response);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetLocationDetails_Aalborg()
+        {
+            //Act
+            var response = controller.GetLocationDetails("ECBOOK","4");
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetLocationDetails_Aarhus()
+        {
+            //Act
+            var response = controller.GetLocationDetails("ECBOOK","25");
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetLocationDetails_Null()
+        {
+            //Act
+            var response = controller.GetLocationDetails("ECBOOK",null);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+        #endregion
+
+        #region 26 GetCountries
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetCountries()
+        {
+            //Act
+            var response = controller.GetCountries();
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        #endregion
+
+        #region 27 GetAvailableCars
+      
+      
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetAvailableCars_Today_ALL()
+        {
+
+            var pickUp = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(1)), Time = "800" };//Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+            var dropOff = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(15)), Time = "800"}; //Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+
+            var pickDropInfo = new NordCar.WebAPI.Models.EC.PickDropInfo() { CountryId = "DK", PickUp = pickUp, DropOff = dropOff, CarTypeId="", CarGroupId = "" };
+            string age = "28";
+            //Act
+            var response = controller.GetAvailableCars(pickDropInfo,age);
+
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        [TestMethod]
+        public void GetAvailableCars_location29()
+        {
+
+            var pickUp = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "12", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(1) ), Time = "800" };//Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+            var dropOff = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "60", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(15)), Time = "800" }; //Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+            var bs = new BasicStructure1() { BookTypes = "ECBOOK" }; 
+            var pickDropInfo = new NordCar.WebAPI.Models.EC.PickDropInfo() { CountryId = "DK", PickUp = pickUp, DropOff = dropOff, CarTypeId = "", CarGroupId = "", Basic = bs };
+            string age = "26";
+
+            //Act
+            var response = controller.GetAvailableCars(pickDropInfo,age);
+
+            //Assert
+            Assert.IsNotNull(response);
+        }
+       
+
+        [TestMethod]
+        public void GetAvailableCars_withCarGroup()
+        {
+
+            var pickUp = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "29", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(1)), Time = "800" };//Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+            var dropOff = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "29", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(15)), Time = "800" }; //Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+
+            var pickDropInfo = new NordCar.WebAPI.Models.EC.PickDropInfo() { CountryId = "DK", PickUp = pickUp, DropOff = dropOff, CarTypeId = "", CarGroupId = "A" };
+            string age = "26";
+            //Act
+            var response = controller.GetAvailableCars(pickDropInfo,age);
+
+            //Assert
+            Assert.IsNotNull(response);
+        }
+        #endregion
+
+        #region 28 GetCarTypes
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetCarTypes()
+        {
+            //Act
+            var response = controller.GetCarTypes();
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        #endregion
+
+        #region 29 GetCarExtras
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetCarExtras()
+        {
+            /*Note
+             * {
+  "CountryId": "DK",
+  "CarTypeId": "",
+  "CarGroupId": "A",
+  "PickUp": {
+    "LocationId": "4",
+    "LocationName": "",
+    "Date": "22052016",
+    "Time": "1000"
+  },
+  "DropOff": {
+    "LocationId": "4",
+    "LocationName": "",
+    "Date": "25052016",
+    "Time": "1500"
+  },
+  "Basic": {
+    "Language": "",
+    "BookTypes": "ECBOOK",
+    "IPAddress": "",
+    "CompanyDealId": "",
+    "CustomerId": "",
+    "ExtraId": "",
+    "VoucherCode": "",
+    "OrgBookNr": "",
+    "StepNr": ""
+  }
+}
+             */
+            var pickUp = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now), Time = Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+            var dropOff = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(5)), Time = Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+            var basic = new BasicStructure1() { BookTypes = "ECBOOK" };
+            var pickDropInfo = new NordCar.WebAPI.Models.EC.PickDropInfo() { CountryId = "DK", PickUp = pickUp, DropOff = dropOff, CarTypeId="", CarGroupId="A", Basic = basic };
+           
+            //Act
+            var response = controller.GetCarExtras(pickDropInfo, "10");
+
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        #endregion
+
+        #region 30 UpdatePrice
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void UpdatePrice_Today()
+        {
+            //skal udfyldes gruppe
+            var pickUp = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(1)), Time = Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+            var dropOff = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(5)), Time = Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+
+            var pickDropInfo = new NordCar.WebAPI.Models.EC.PickDropInfo() { CountryId = "DK", PickUp = pickUp, DropOff = dropOff, CarGroupId="A", CarTypeId="02" };
+
+            var pricepart = new NordCar.WebAPI.Models.EC.PricePart();
+
+            var recommendedExtra = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+            recommendedExtra.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "910", NumbUnit = "1" });
+            recommendedExtra.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "905", NumbUnit = "1" });
+
+            var insurance = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+            insurance.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "PAI", NumbUnit = "1" });
+
+            var mileage = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+            mileage.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "969", NumbUnit = "KM200" });
+
+            var selectedExtras = new NordCar.WebAPI.Models.EC.SelectedExtras() { RecommendedExtras = recommendedExtra, Insurance = insurance, Mileage = mileage };
+
+
+            pricepart.PickDropInfo = pickDropInfo;
+            pricepart.ProductId = "10";
+            pricepart.Extra = selectedExtras;
+            
+
+            //Act
+            var response = controller.UpdatePrice(pricepart,"26");
+
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        #endregion
+
+        #region 31 MakeReservation
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void MakeReservation()
+        {
+
+            var pickUp = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(1)), Time = Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+            var dropOff = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(5)), Time = Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+            var basic = new BasicStructure1() { BookTypes = "ECBOOK" };
+            var pickDropInfo = new NordCar.WebAPI.Models.EC.PickDropInfo() { CountryId = "DK", PickUp = pickUp, DropOff = dropOff, CarTypeId = "02", CarGroupId="A", Basic = basic };
+
+            var recommendedExtra = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+                 recommendedExtra.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "910", NumbUnit = "1" });
+
+            var insurance = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+                insurance.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "PAI", NumbUnit = "1" });
+
+            var mileage = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+            //    mileage.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "969", NumbUnit = "KM200" });
+
+                var selectedExtras = new NordCar.WebAPI.Models.EC.SelectedExtras() { RecommendedExtras = recommendedExtra, Insurance = insurance, Mileage = mileage };
+
+            var reservation = new NordCar.WebAPI.Models.EC.Reservation();
+            reservation.PickDropInfo = pickDropInfo;
+            reservation.Title = "Mr"; //Mr and Mrs
+            reservation.Gender = "Male"; //Male and Female
+            reservation.FirstName = "Claus";
+            reservation.LastName = "Skydt";
+            reservation.BirthDay = "08-02-1971";
+            reservation.Address = "Nattergalevej 28";
+            reservation.City = "Galten";
+            reservation.PostCode = "8464";
+            reservation.Country = "Danmark";
+            reservation.Email = "csk@goapplicate.com";
+            reservation.CustomerNo = "141316";
+            reservation.ProductId = "10";
+            reservation.paymentType = "1";
+            reservation.Extra = selectedExtras;
+            reservation.BookStatus = 1;
+            reservation.FlightNo = "Voyager 12";
+            reservation.Remarks = "Dette er en meget simbel besked........";
+            reservation.PhoneNumber = "45671234";
+
+            //Act
+            var response = controller.MakeReservation(reservation);
+
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        #endregion
+
+        #region 32 SearchBooking
+        /// <summary>
+        /// SearchBookingBy_ReservationNo_Email_LastName
+        /// </summary>
+        [TestMethod]
+        public void SearchBookingBy_ReservationNo_Email()
+        {
+            
+            string reservationNo = "28428505";
+            string email = "csk67@goapplicate.com";
+            string lastName = "";
+            string date = "";
+            string customerNo = "";
+            
+            //Act
+            var response = controller.SearchBooking(reservationNo, email, lastName, date);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        /// <summary>
+        /// SearchBookingBy_ReservationNo_Email_LastName
+        /// </summary>
+        [TestMethod]
+        public void SearchBookingBy_Email_Date()
+        {
+
+            string reservationNo = "";
+            string email = "csk@goapplicate.com";
+            string lastName = "";
+            string date = "13-04-2015";
+            string customerNo = "";
+            //Act
+            var response = controller.SearchBooking(reservationNo, email, lastName, date);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        /// <summary>
+        /// SearchBookingBy_ReservationNo_Email_LastName
+        /// </summary>
+        [TestMethod]
+        public void SearchBookingBy_Reservation_Lastname()
+        {
+
+            string reservationNo = "2845634";
+            string email = "";
+            string lastName = "Skydt";
+            string date = "";
+            string customerNo = "";
+            //Act
+            var response = controller.SearchBooking(reservationNo, email, lastName, date);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        /// <summary>
+        /// SearchBookingBy_ReservationNo_Email_LastName
+        /// </summary>
+        [TestMethod]
+        public void SearchBookingBy_OnlyReservation()
+        {
+
+            string reservationNo = "28428528";
+            string email = "";
+            string lastName = "";
+            string date = "";
+            string customerNo = "";
+            //Act
+            var response = controller.SearchBooking(reservationNo, email, lastName, date);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        #endregion
+
+        #region 33 CancelBooking
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void CancelBooking()
+        {
+            //Act
+            var pickUp = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now), Time = Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+            var dropOff = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(5)), Time = Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+
+            var pickDropInfo = new NordCar.WebAPI.Models.EC.PickDropInfo() { CountryId = "DK", PickUp = pickUp, DropOff = dropOff, CarTypeId = "" };
+
+            var recommendedExtra = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+            recommendedExtra.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "910", NumbUnit = "1" });
+
+            var insurance = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+            insurance.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "PAI", NumbUnit = "1" });
+
+            var mileage = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+            mileage.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "969", NumbUnit = "KM200" });
+
+            var selectedExtras = new NordCar.WebAPI.Models.EC.SelectedExtras() { RecommendedExtras = recommendedExtra, Insurance = insurance, Mileage = mileage };
+
+            var reservation = new NordCar.WebAPI.Models.EC.Reservation();
+            reservation.PickDropInfo = pickDropInfo;
+            reservation.Title = "Mr"; //Mr and Mrs
+            reservation.Gender = "Male"; //Male and Female
+            reservation.FirstName = "Claus";
+            reservation.LastName = "Skydt";
+            reservation.BirthDay = "08-02-1971";
+            reservation.Address = "Nattergalevej 28";
+            reservation.City = "Galten";
+            reservation.PostCode = "8464";
+            reservation.Country = "Danmark";
+            reservation.Email = "csk@goapplicate.com";
+            reservation.ProductId = "prod671-7";
+            reservation.Extra = selectedExtras;
+
+            dynamic actionResult = controller.MakeReservation(reservation);
+            dynamic content = actionResult.Content;
+
+            dynamic actionResult2 = controller.CancelBooking(content.ReservationNo);
+            dynamic content2 = actionResult2.Content;
+
+            //Assert
+            Assert.AreEqual("True", content2.Cancelled);
+        }
+
+        #endregion
+
+        #region 34 GetPdfBooking
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetPdfBooking()
+        {
+            //Act
+            var pickUp = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now), Time = Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+            var dropOff = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(5)), Time = Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+            
+            var basis = new BasicStructure1();
+            basis.BookTypes = BookTypes.ECBOOK.ToString();
+            var pickDropInfo = new NordCar.WebAPI.Models.EC.PickDropInfo() { CountryId = "DK", PickUp = pickUp, DropOff = dropOff, CarTypeId = "", Basic = basis };
+
+            var recommendedExtra = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+            recommendedExtra.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "910", NumbUnit = "1" });
+
+            var insurance = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+            insurance.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "PAI", NumbUnit = "1" });
+
+            var mileage = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+            mileage.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "969", NumbUnit = "KM200" });
+
+            var selectedExtras = new NordCar.WebAPI.Models.EC.SelectedExtras() { RecommendedExtras = recommendedExtra, Insurance = insurance, Mileage = mileage };
+
+            var reservation = new NordCar.WebAPI.Models.EC.Reservation();
+            reservation.PickDropInfo = pickDropInfo;
+            reservation.Title = "Mr"; //Mr and Mrs
+            reservation.Gender = "Male"; //Male and Female
+            reservation.FirstName = "Claus";
+            reservation.LastName = "Skydt";
+            reservation.BirthDay = "08-02-1971";
+            reservation.Address = "Nattergalevej 28";
+            reservation.City = "Galten";
+            reservation.PostCode = "8464";
+            reservation.Country = "Danmark";
+            reservation.Email = "csk@goapplicate.com";
+            reservation.ProductId = "prod671-7";
+            reservation.Extra = selectedExtras;
+
+            dynamic actionResult = controller.MakeReservation(reservation);
+            dynamic content = actionResult.Content;
+
+           var actionResult2 = controller.GetPdfBooking(content.ReservationNo);
+         
+        }
+
+        #endregion
+
+        #region 35 CreateAccount
+        /*
+         * ******************TEST********************
+        {
+  "AccountType": "1",
+  "Title": "Mr",
+  "Gender": "Male",
+  "FirstName": "Anton",
+  "LastName": "Antonsen",
+  "Address": "Vilhelms Alle 22",
+  "Address2": "",
+  "Address3": "",
+  "City": "Aarhus",
+  "PostCode": "8000",
+  "Country": "Danmark",
+  "Email": "Anton.Antonsen@gmail.com",
+  "Phone": "67 21 45 76",
+  "Password": "test22test22",
+  "Driver": {
+    "BirthDay": "02-07-1968",
+    "BirthCity": "Aarhus",
+    "BirthCountry": "Danmark",
+    "LicenseNumber": "3434343434",
+    "IssueDate": "06-06-1980",
+    "ExpiryDate": "12-06-2022",
+    "IssueCountry": "Danmark"
+  },
+  "Identification": {
+    "IdentityNumber": "45693479734",
+    "PassPortNumber": "",
+    "IssueDate": "05-09-1979",
+    "ExpiryDate": "05-09-2022",
+    "IssueCountry": "Danmark"
+  },
+  "FrequentTravelerProgram": {
+    "Id": "0",
+    "CardNumber": "",
+    "ExpiryDate": ""
+  }
+}
+        *******************************************/
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void CreateMyAccount()
+        {
+            var persacc = new NordCar.WebAPI.Models.EC.PersonalAccount();
+            var account = new NordCar.WebAPI.Models.EC.Person();
+            var driver = new NordCar.WebAPI.Models.EC.Driver() { BirthDay = "08-02-1971", BirthCity = "Aarhus", BirthCountry = "Danmark", LicenseNumber = "33345543750", IssueDate = "08-06-1989", ExpiryDate = "08-02-2041", IssueCountry="Danmark" };
+            var ident = new NordCar.WebAPI.Models.EC.Identification() { IdentityNumber="2345671743", PassPortNumber="", IssueDate="07-07-2012", ExpiryDate="07-07-2022", IssueCountry="Danmark" };
+            var friq = new NordCar.WebAPI.Models.EC.FrequentTravelerProgram() { Id = "0", CardNumber = "", ExpiryDate = "" };
+            //Act
+            account.Title = "Mr"; //Mr and Mrs
+            account.Gender = "Male"; //Male and Female
+            account.FirstName = "Claus";
+            account.LastName = "Villumsen";
+            account.Address = "Nattergalevej 28";
+            account.City = "Galten";
+            account.PostCode = "8464";
+            account.Country = "Danmark";
+            account.Email = "csk11@goapplicate.com";
+            account.AccountType = "1";
+            account.Phone = "22105256";
+            account.Password = "fisk8fisk9";
+            account.Driver = driver;
+            account.Identification = ident;
+            account.FrequentTravelerProgram = friq;
+
+            var basic = new BasicStructure1();
+            basic.IPAddress = "34.34.34.34";
+
+
+            persacc.basic = basic;
+            persacc.person = account;
+
+            var response = controller.CreateAccount(persacc);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void CreateMyAccount_secrets()
+        {
+            var persacc = new NordCar.WebAPI.Models.EC.PersonalAccount();
+            var account = new NordCar.WebAPI.Models.EC.Person();
+            var driver = new NordCar.WebAPI.Models.EC.Driver() { BirthDay = "08-02-1971", BirthCity = "Aarhus", BirthCountry = "Danmark", LicenseNumber = "1234554326000", IssueDate = "08-06-1989", ExpiryDate = "08-02-2041", IssueCountry = "Danmark" };
+            var ident = new NordCar.WebAPI.Models.EC.Identification() { IdentityNumber = "23456712", PassPortNumber = "", IssueDate = "07-07-2012", ExpiryDate = "07-07-2022", IssueCountry = "Danmark" };
+            var friq = new NordCar.WebAPI.Models.EC.FrequentTravelerProgram() { Id = "0", CardNumber = "", ExpiryDate = "" };
+            var basic = new BasicStructure1() { IPAddress = "34.34.34.34" };
+            //Act
+            account.Title = "Mr"; //Mr and Mrs
+            account.Gender = "Male"; //Male and Female
+            account.FirstName = "Claus";
+            account.LastName = "Skydt8";
+            account.Address = "Nattergalevej 28";
+            account.City = "Galten";
+            account.PostCode = "8464";
+            account.Country = "Danmark";
+            account.Email = "csk5@goapplicate.com";
+            account.AccountType = "1";
+            account.Phone = "22105256";
+            account.Password = "fisk20fisk21";
+            account.Driver = driver;
+            account.Identification = ident;
+            account.FrequentTravelerProgram = friq;
+            account.SecretQuestionId = "0";
+            account.SecretQuestionAnswer = "Gravhund";
+
+
+            persacc.basic = basic;
+            persacc.person = account;
+
+            var response = controller.CreateAccount(persacc);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void CreateMyAccount_null()
+        {
+
+           
+            var response = controller.CreateAccount(null);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+        #endregion
+
+        #region 36 Login
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void Login_Claus()
+        {
+            
+            var basic = new BasicStructure1() { };
+            var logininfo = new NordCar.WebAPI.Models.EC.LoginInfo() { UserName = "csk11@goapplicate.com", Password = "fisk20fisk21", LoginType = Models.EC.LoginType.Personal };
+            //Act
+            //var response = controller.Login("csk@goapplicate.com", "fisk6fisk7");
+            logininfo.Basic = basic;
+            var response = controller.Login(logininfo);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        [TestMethod]
+        public void Login_NytLogin_Claus()
+        {
+            var basic = new BasicStructure1() { };
+          
+            var logininfo = new NordCar.WebAPI.Models.EC.LoginInfo() { UserName = "910361", Password = "Test4321", LoginType = Models.EC.LoginType.Personal};
+            logininfo.Basic = basic;
+            //Act
+            //var response = controller.Login("csk@goapplicate.com", "fisk6fisk7");
+            var response = controller.Login(logininfo);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        [TestMethod]
+        public void Login_NytLogin_SOS()
+        {
+            var basic = new BasicStructure1() { };
+            var logininfo = new NordCar.WebAPI.Models.EC.LoginInfo() { UserName = "199696", Password = "test1234", LoginType = Models.EC.LoginType.Company };
+            
+            //Act
+            var response = controller.Login(logininfo);
+            
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        [TestMethod]
+        public void Login_NytLogin_PondEq()
+        {
+            var logininfo = new NordCar.WebAPI.Models.EC.LoginInfo() { UserName = "50675", Password = "19091948", LoginType = Models.EC.LoginType.Company };
+            var basic = new BasicStructure1() { };
+            //Act
+            var response = controller.Login(logininfo);
+
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        [TestMethod]
+        public void Login_NytLogin_Type200()
+        {
+            var basic = new BasicStructure1(){ BookTypes= BookTypes.ECBOOK.ToString(), Language = "DK", CustomerId = "910361"};
+            var logininfo = new NordCar.WebAPI.Models.EC.LoginInfo() { UserName = "199696", Password = "", LoginType = Models.EC.LoginType.Agreement};
+
+            //Act
+            var response = controller.Login(logininfo);
+
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+     
+        #endregion
+
+        #region 37 ForgotPassword
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void ForgotPassword_Claus()
+        {
+            //Act
+            var response = controller.ForgotPassword("csk@goapplicate.com");
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        #endregion
+
+        #region 38 ModifyAccount
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void ModifyMyAccount()
+        {
+            var account2 = new NordCar.WebAPI.Models.EC.PersonalAccount();
+            var account = new NordCar.WebAPI.Models.EC.Person();
+            var driver = new NordCar.WebAPI.Models.EC.Driver() { BirthDay = "08-02-1971", BirthCity = "Aarhus", BirthCountry = "Danmark", LicenseNumber = "33345543750", IssueDate = "08-06-1989", ExpiryDate = "08-02-2041", IssueCountry = "Danmark" };
+            var ident = new NordCar.WebAPI.Models.EC.Identification() { IdentityNumber = "23456712", PassPortNumber = "12341234", IssueDate = "07-07-2012", ExpiryDate = "07-07-2022", IssueCountry = "Danmark" };
+            var friq = new NordCar.WebAPI.Models.EC.FrequentTravelerProgram() { Id = "0", CardNumber = "", ExpiryDate = "" };
+            var basic = new BasicStructure1() { };
+          
+            //Act
+            account.Title = "Mr"; //Mr and Mrs
+            account.Gender = "Male"; //Male and Female
+            account.FirstName = "Claus";
+            account.LastName = "Skydt";
+            account.Address = "Nattergalevej 28";
+            account.City = "Galten";
+            account.PostCode = "8464";
+            account.Country = "Danmark";
+            account.Email = "csk11@goapplicate.com";
+            account.AccountType = "1";
+            account.Phone = "22105256";
+            account.Password = "fisk20fisk21";
+            account.Driver = driver;
+            account.Identification = ident;
+            account.FrequentTravelerProgram = friq;
+            account.CustomerNo = "300652";
+
+            account2.person = account;
+            account2.basic = basic;
+
+            var response = controller.ModifyAccount(account2);
+
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void ModifyMyAccount_CountryEmpty()
+        {
+            var account2 = new NordCar.WebAPI.Models.EC.PersonalAccount();
+            var account = new NordCar.WebAPI.Models.EC.Person();
+            var driver = new NordCar.WebAPI.Models.EC.Driver() { BirthDay = "08-02-1971", BirthCity = "Aarhus", BirthCountry = "Danmark", LicenseNumber = "333455432", IssueDate = "08-06-1989", ExpiryDate = "08-02-2041", IssueCountry = "Danmark" };
+            var ident = new NordCar.WebAPI.Models.EC.Identification() { IdentityNumber = "23456712", PassPortNumber = "12341234", IssueDate = "07-07-2012", ExpiryDate = "07-07-2022", IssueCountry = "Danmark" };
+            var friq = new NordCar.WebAPI.Models.EC.FrequentTravelerProgram() { Id = "0", CardNumber = "", ExpiryDate = "" };
+            var basic = new BasicStructure1() { };
+          
+            //Act
+            account.Title = "Mr"; //Mr and Mrs
+            account.Gender = "Male"; //Male and Female
+            account.FirstName = "Claus";
+            account.LastName = "Skydt";
+            account.Address = "Nattergalevej 28";
+            account.City = "Galten";
+            account.PostCode = "8464";
+            account.Country = "";
+            account.Email = "csk2@goapplicate.com";
+            account.AccountType = "1";
+            account.Phone = "22105256";
+            account.Password = "fisk6fisk7";
+            account.Driver = driver;
+            account.Identification = ident;
+            account.FrequentTravelerProgram = friq;
+            account.CustomerNo = "141316";
+
+
+            account2.person = account;
+            account2.basic = basic;
+           
+           
+            var response = controller.ModifyAccount(account2);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+
+        #endregion
+
+        #region 39 GetCarSpecification
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetCarSpecification_ALL()
+        {
+          
+
+            var response = controller.GetCarSpecifications("ECBOOK","DK","","","");
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetCarSpecification_personbiler_A()
+        {
+
+            var response = controller.GetCarSpecifications("ECBOOK","DK","02", "A","");
+            //Assert
+            Assert.IsNotNull(response);
+        }
+        #endregion
+
+        #region 40 GetSecretQuestions
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetSecretQuestions()
+        {
+
+
+            var response = controller.GetSecretQuestions();
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        #endregion
+
+        #region 41 GetPaymentCardTypes
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetPaymentCardTypes()
+        {
+
+
+            var response = controller.GetPaymentCardTypes();
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        #endregion
+
+        #region 42 GetFrequentTravelerPrograms
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetFrequentTravelerPrograms()
+        {
+
+
+            var response = controller.GetFrequentTravelerPrograms();
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+        #endregion
+
+        #region GetFleet
+        /// <summary>
+        /// 
+        /// </summary>
+        [TestMethod]
+        public void GetFleet()
+        {
+            var response = controller.GetFleet("ECBOOK","DK","");
+            //Assert
+            Assert.IsNotNull(response);
+        }
+
+       
+        #endregion
+
+        #region GetBookings
+        /// <summary>
+        /// GetBookings
+        /// </summary>
+        [TestMethod]
+        public void GetBookings()  
+        {
+
+            string customerNo = "141316";
+           
+            //Act
+            var response = controller.GetBookings(customerNo);   
+            //Assert
+                Assert.IsNotNull(response);
+        }
+
+        /// <summary>
+        /// GetBookings
+        /// </summary>
+        [TestMethod]
+        public void GetBookings_emptyString()
+        {
+
+            string customerNo = "";
+
+            //Act
+            var response = controller.GetBookings(customerNo);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+        #endregion
+
+        #region 44 Dibs
+        /// <summary>
+        /// Dibs test
+        /// </summary>
+        [TestMethod]
+        public void TestDibs()
+        {
+          //Act
+            var pickUp = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now), Time = Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+            var dropOff = new NordCar.WebAPI.Models.EC.Trip() { LocationId = "4", Date = Helpers.ConvertDateTimeToNovicellDateString(DateTime.Now.AddDays(5)), Time = Helpers.ConvertDateTimeToNovicellTime(DateTime.Now) };
+
+            var pickDropInfo = new NordCar.WebAPI.Models.EC.PickDropInfo() { CountryId = "DK", PickUp = pickUp, DropOff = dropOff, CarTypeId = "" };
+
+            var recommendedExtra = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+            recommendedExtra.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "910", NumbUnit = "1" });
+
+            var insurance = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+            insurance.Add(new NordCar.WebAPI.Models.EC.SelectedBase() { Id = "PAI", NumbUnit = "1" });
+
+            var mileage = new List<NordCar.WebAPI.Models.EC.SelectedBase>();
+           
+            var selectedExtras = new NordCar.WebAPI.Models.EC.SelectedExtras() { RecommendedExtras = recommendedExtra, Insurance = insurance, Mileage = mileage };
+
+            var reservation = new NordCar.WebAPI.Models.EC.Reservation();
+            reservation.PickDropInfo = pickDropInfo;
+            reservation.Title = "Mr"; //Mr and Mrs
+            reservation.Gender = "Male"; //Male and Female
+            reservation.FirstName = "Claus";
+            reservation.LastName = "Skydt";
+            reservation.BirthDay = "08-02-1971";
+            reservation.Address = "Nattergalevej 28";
+            reservation.City = "Galten";
+            reservation.PostCode = "8464";
+            reservation.Country = "Danmark";
+            reservation.Email = "csk@goapplicate.com";
+            reservation.ProductId = "prod671-7";
+            reservation.Extra = selectedExtras;
+            reservation.paymentType = "1";
+
+            dynamic actionResult = controller.MakeReservation(reservation);
+            dynamic content = actionResult.Content;
+
+
+
+            dynamic actionResult2 = controller.DibsResult(int.Parse(content.RentalInfo.ReservationNo), 1, 1, 1, 0, 23, 2000);
+            dynamic content2 = actionResult2.Content;
+
+           
+            //Assert
+              Assert.AreEqual("True", content2.Cancelled);
+        }
+        #endregion
+
+  
+
+    #region 45 CheckPromotionCode
+        
+      /// <summary>
+        /// CheckPromotionCode
+        /// </summary>
+        [TestMethod]
+        public void CheckPromotionCode()
+        {
+
+            string promotionCode = "Gigt"; //brug også test1 ell. test2
+            var basic = new BasicStructure1() { BookTypes = "ECBOOK", VoucherCode = promotionCode };
+
+            //Act
+            var response = controller.CheckPromotionCode(basic);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+        #endregion
+
+         #region 46 GetCarTypesByLocationDetails
+        
+      /// <summary>
+        /// GetCarTypesByLocationDetails
+        /// </summary>
+        [TestMethod]
+        public void GetCarTypesByLocationDetails()
+        {
+
+            string country = "DK";
+            string locationId = "0"; 
+            
+            //Act
+            var response = controller.GetCarTypesByLocationDetails("ECBOOK",locationId,country);
+            //Assert
+            Assert.IsNotNull(response);
+        }
+        #endregion
+
+        #region 47 GetReservationText
+        /// <summary>
+        /// GetReservationText
+        /// </summary>
+        [TestMethod]
+        public void GetReservationText()
+        {
+
+            
+
+            //Act
+            var response = controller.GetReservationText("3628746327426734");
+            //Assert
+            Assert.IsNotNull(response);
+        }
+        #endregion
+
+        
+
+    }
+}
+     

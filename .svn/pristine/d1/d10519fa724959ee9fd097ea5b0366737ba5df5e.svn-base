@@ -1,0 +1,35 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NordCar.Carla.Data.Entities.EC
+{
+    public class ResRAData
+    {
+        public string ReservationNumber { get; set; }
+        public string RANumber { get; set; }
+        public string Status { get; set; }
+        public string StationNoOut { get; set; }
+        public string DateOut { get; set; }
+        public string TimeOut { get; set; }
+        public string StationNoIn { get; set; }
+        public string DateIn { get; set; }
+        public string TimeIn { get; set; }
+        public string CarRegistrationNumber { get; set; }
+        public string Brand { get; set; }
+        public string Model { get; set; }
+        public string FirstRegistrationDate { get; set; }
+        public string WinterTires { get; set; }
+        public string Automatic { get; set; }
+        public string Towbar { get; set; }
+        public string ChildChair { get; set; }
+        public string GPS { get; set; }
+        public string ExtraDriver { get; set; }
+        public string CustomerReferenceNumber { get; set; }
+
+    }
+
+   
+}

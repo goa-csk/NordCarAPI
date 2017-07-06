@@ -1,0 +1,56 @@
+﻿using Microsoft.Practices.Unity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Http;
+using System.Web.Mvc;
+using System.Web.Optimization;
+using System.Web.Routing;
+using NordCar.Carla.Data.Repository;
+using NordCar.Carla.Data.Entities;
+using NordCar.WebAPI.Controllers;
+using NordCar.Carla.Data.Implementation;
+
+namespace NordCar.WebAPI
+{
+    public class WebApiApplication : System.Web.HttpApplication
+    {
+        protected void Application_Start()
+        {
+            AreaRegistration.RegisterAllAreas();
+
+            //TO DO
+            GlobalConfiguration.Configuration.Formatters.XmlFormatter.SupportedMediaTypes.Clear();
+    
+            GlobalConfiguration.Configure(WebApiConfig.Register);
+
+            var config = GlobalConfiguration.Configuration;
+            config.Filters.Add(new ExecutionTimeFilterAttribute());
+            
+            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+            BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+
+           
+            this.ConfigureApi(GlobalConfiguration.Configuration);
+
+        }
+
+         void ConfigureApi(HttpConfiguration config)
+         {
+               var unity = new UnityContainer();
+               unity.RegisterType<WebAPIController>();
+               unity.RegisterType<PSAPIController>();
+               unity.RegisterType<ECController>();
+             
+               unity.RegisterType<IWebAPIManagerRepository, WebAPIManagerRepository>(new ContainerControlledLifetimeManager(), new InjectionConstructor(Properties.Settings.Default.Ip7913, Properties.Settings.Default.Port7913, Properties.Settings.Default.Logfile));
+               unity.RegisterType<IPSAPIManagerRepository, PSAPIManagerRepository>(new ContainerControlledLifetimeManager(), new InjectionConstructor(Properties.Settings.Default.Ip7913, Properties.Settings.Default.Port7913, Properties.Settings.Default.Logfile));
+               unity.RegisterType<IECAPIManagerRepository, ECAPIManagerRepository>(new ContainerControlledLifetimeManager(), new InjectionConstructor(Properties.Settings.Default.Ip7913, Properties.Settings.Default.Port7913, Properties.Settings.Default.Logfile));
+               
+               config.DependencyResolver = new IoCContainer(unity);
+        }
+    }
+}

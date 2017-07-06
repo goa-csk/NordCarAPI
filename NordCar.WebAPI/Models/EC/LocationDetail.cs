@@ -1,0 +1,51 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NordCar.WebAPI.Models.EC
+{
+    public class OpeningHours
+    {
+        public string Name { get; set; }
+        public string DayOfWeek { get; set; }
+        public bool Open { get; set; }
+        public string OpeningHour { get; set; }
+        public string ClosingHour { get; set; }
+        public bool ExtraCharges { get; set; }
+    }
+
+    public class LocationDetail
+    {
+        public string Id { get; set; }
+        public string LocationCode { get; set; }
+        public string StationName { get; set; }
+        public string Type { get; set; }
+        public string Address { get; set; }
+        public string ZipCode { get; set; }
+        public string City { get; set; }
+        public string Country { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public string ForeignEmail { get; set; }
+        public string Latitude { get; set; }
+        public string Longitude { get; set; }
+        public string TopText { get; set; }
+        public List<OpeningHours> OpeningHours { get; set; }
+        public List<Exception> Exceptions { get; set; }
+
+    }
+
+    public class Exception
+    {
+        public string Name { get; set; }
+        public string DayOfWeek { get; set; }
+        public string OpeningHour { get; set; }
+        public string ClosingHour { get; set; }
+        public string Date { get; set; }
+        public bool ExtraCharges { get; set; }
+    }
+
+    
+}

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/EuropCarService" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/EuropCarService" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="http://europcarservicetest.sos.eu/EuropCarService.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:complexType name="ReservationStatusContext">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Contracts" nillable="true" type="tns:ArrayOfContract" />
+      <xs:element minOccurs="0" name="ReservationNumber" type="xs:int" />
+      <xs:element minOccurs="0" name="SosCaseId" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ReservationStatusContext" nillable="true" type="tns:ReservationStatusContext" />
+  <xs:complexType name="ArrayOfContract">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Contract" nillable="true" type="tns:Contract" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfContract" nillable="true" type="tns:ArrayOfContract" />
+  <xs:complexType name="Contract">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="AdaptorCable" type="xs:boolean" />
+      <xs:element minOccurs="0" name="Automatic" type="xs:boolean" />
+      <xs:element minOccurs="0" name="CarBrand" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="CarFirstRegistered" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="CarModel" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ChildSeat" type="xs:boolean" />
+      <xs:element minOccurs="0" name="ContractCreated" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="ContractNumber" type="xs:int" />
+      <xs:element minOccurs="0" name="CurrentContractStatus" type="tns:ContractStatus" />
+      <xs:element minOccurs="0" name="ExtraDriver" type="xs:boolean" />
+      <xs:element minOccurs="0" name="Extradition" nillable="true" type="tns:ReservationEvent" />
+      <xs:element minOccurs="0" name="Filing" nillable="true" type="tns:ReservationEvent" />
+      <xs:element minOccurs="0" name="GpsNavigation" type="xs:boolean" />
+      <xs:element minOccurs="0" name="Hitch" type="xs:boolean" />
+      <xs:element minOccurs="0" name="InvoiceCurrencyCode" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="InvoicedFuelLitre" type="xs:decimal" />
+      <xs:element minOccurs="0" name="InvoicedFuelPrice" type="xs:decimal" />
+      <xs:element minOccurs="0" name="LicensePlate" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="MilageRegisteredOnContract" type="xs:decimal" />
+      <xs:element minOccurs="0" name="WinterTires" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Contract" nillable="true" type="tns:Contract" />
+  <xs:simpleType name="ContractStatus">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Created">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">1</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Extended">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">2</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Bobed">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">3</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Finalized">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">4</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Cancelled">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">5</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="CancelledCustomerBlacklisted">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">6</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="ContractStatus" nillable="true" type="tns:ContractStatus" />
+  <xs:complexType name="ReservationEvent">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="EventTime" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="StationNumber" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ReservationEvent" nillable="true" type="tns:ReservationEvent" />
+</xs:schema>

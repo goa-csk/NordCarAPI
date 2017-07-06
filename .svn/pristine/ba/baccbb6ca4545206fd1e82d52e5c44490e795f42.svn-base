@@ -1,0 +1,1327 @@
+﻿using NordCar.WebAPI.Messages;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+
+using System.Net.Http;
+using System.Web.Http;
+using NordCar.Carla.Data.Repository;
+using AutoMapper;
+using NordCar.WebAPI.BootStrapper;
+using NordCar.WebAPI.Models;
+using System.Web.Http.Cors;
+using System.Web;
+using NordCar.WebAPI.Filter;
+using System.Web.Http.Description;
+using System.Net.Http.Headers;
+using System.Reflection;
+using System.Diagnostics;
+using System.Collections.Specialized;
+
+
+
+namespace NordCar.WebAPI.Controllers
+{
+
+
+
+    public class ECController : BaseAPIController
+    {
+
+        /// <summary>
+        /// Initialise a variable of IContactsManagerRepository from data layer
+        /// </summary>
+        protected readonly IECAPIManagerRepository ECAPIManagerRepository;
+
+        /// <summary>
+        /// Inject repository
+        /// </summary>
+        /// <param name="_repository">IPSAPIManagerRepository</param>
+        public ECController(IECAPIManagerRepository _repository)
+        {
+
+            if (_repository == null)
+            {
+                throw new ArgumentNullException("WebAPIManager Repository exception");
+            }
+
+            this.ECAPIManagerRepository = _repository;
+
+            var bs = new Bootstrapper();
+            bs.Initialize();
+        }
+
+        private static void PickDropInfoTrace(NordCar.WebAPI.Models.EC.PickDropInfo input)
+        {
+            Trace.TraceInformation(string.Format("PickDropInfo.CountryId={0} \n", input.CountryId));
+            Trace.TraceInformation(string.Format("PickDropInfo.CarTypeId={0} \n", input.CarTypeId));
+            Trace.TraceInformation(string.Format("PickDropInfo.CarGroupId={0} \n", input.CarGroupId));
+
+            Trace.TraceInformation(string.Format("PickDropInfo.PickUp.LocationId={0}", input.PickUp.LocationId));
+            Trace.TraceInformation(string.Format("PickDropInfo.PickUp.LocationName={0}", input.PickUp.LocationName));
+            Trace.TraceInformation(string.Format("PickDropInfo.PickUp.Date={0}", input.PickUp.Date));
+            Trace.TraceInformation(string.Format("PickDropInfo.PickUp.Time={0}", input.PickUp.Time));
+
+            Trace.TraceInformation(string.Format("PickDropInfo.DropOff.LocationId={0}", input.DropOff.LocationId));
+            Trace.TraceInformation(string.Format("PickDropInfo.DropOff.LocationName={0}", input.DropOff.LocationName));
+            Trace.TraceInformation(string.Format("PickDropInfo.DropOff.Date={0}", input.DropOff.Date));
+            Trace.TraceInformation(string.Format("PickDropInfo.DropOff.Time={0}", input.DropOff.Time));
+
+            if (input.Basic != null)
+            {
+                Trace_Basic(input.Basic);
+            }
+            else
+            {
+                Trace.TraceInformation("PickDropInfo.Basic not initiated");
+            }
+
+        }
+
+        private static void Trace_Basic(NordCar.WebAPI.Models.BasicStructure1 input)
+        {
+            Trace.TraceInformation(string.Format("Basic.Language={0}", input.Language));
+            Trace.TraceInformation(string.Format("Basic.BookTypes={0}", input.BookTypes));
+            Trace.TraceInformation(string.Format("Basic.IPAddress={0}", input.IPAddress));
+            Trace.TraceInformation(string.Format("Basic.CompanyDealId={0}", input.CompanyDealId));
+            Trace.TraceInformation(string.Format("Basic.CustomerId={0}", input.CustomerId));
+            Trace.TraceInformation(string.Format("Basic.ExtraId={0}", input.ExtraId));
+            Trace.TraceInformation(string.Format("Basic.VoucherCode={0}", input.VoucherCode));
+            Trace.TraceInformation(string.Format("Basic.OrgBookNr={0}", input.OrgBookNr));
+            Trace.TraceInformation(string.Format("Basic.StepNr={0}", input.StepNr));
+        }
+
+        private static void TracePricePart(NordCar.WebAPI.Models.EC.PricePart pricepart)
+        {
+            
+            PickDropInfoTrace(pricepart.PickDropInfo);
+
+            Trace.TraceInformation(string.Format("ProductId={0}",pricepart.ProductId));
+
+            TraceExtra(pricepart.Extra);
+         
+        }
+
+        private static void TraceExtra(NordCar.WebAPI.Models.EC.SelectedExtras extra)
+        {
+            Trace.TraceInformation("RecommendedExtras");
+            foreach (NordCar.WebAPI.Models.EC.SelectedBase sb in extra.RecommendedExtras)
+            {
+                Trace.TraceInformation(string.Format("Id={0}", sb.Id));
+                Trace.TraceInformation(string.Format("NumbUnit={0}", sb.NumbUnit));
+            }
+
+            Trace.TraceInformation("Insurance");
+            foreach (NordCar.WebAPI.Models.EC.SelectedBase sb in extra.Insurance)
+            {
+                Trace.TraceInformation(string.Format("Id={0}", sb.Id));
+                Trace.TraceInformation(string.Format("NumbUnit={0}", sb.NumbUnit));
+            }
+
+            Trace.TraceInformation("Mileage");
+            foreach (NordCar.WebAPI.Models.EC.SelectedBase sb in extra.Mileage)
+            {
+                Trace.TraceInformation(string.Format("Id={0}", sb.Id));
+                Trace.TraceInformation(string.Format("NumbUnit={0}", sb.NumbUnit));
+            }
+        
+        
+        }
+
+        private static void TraceReservation(NordCar.WebAPI.Models.EC.Reservation reservation)
+        { 
+            Trace.TraceInformation(string.Format("Title={0}",reservation.Title));
+            Trace.TraceInformation(string.Format("Gender={0}",reservation.Gender));
+            Trace.TraceInformation(string.Format("FirstName={0}",reservation.FirstName));
+            Trace.TraceInformation(string.Format("LastName={0}",reservation.LastName));
+            Trace.TraceInformation(string.Format("BirthDay={0}",reservation.BirthDay));
+            Trace.TraceInformation(string.Format("Address={0}",reservation.Address));
+            Trace.TraceInformation(string.Format("Address2={0}",reservation.Address2));
+            Trace.TraceInformation(string.Format("Address3={0}",reservation.Address3));
+            Trace.TraceInformation(string.Format("City={0}",reservation.City));
+            Trace.TraceInformation(string.Format("PostCode={0}",reservation.PostCode));
+            Trace.TraceInformation(string.Format("Country={0}",reservation.Country));
+            Trace.TraceInformation(string.Format("Email={0}",reservation.Email));
+            Trace.TraceInformation(string.Format("CustomerNo={0}",reservation.CustomerNo));
+            Trace.TraceInformation(string.Format("PaymentType={0}",reservation.paymentType));
+            Trace.TraceInformation(string.Format("ProductId={0}",reservation.ProductId));
+            Trace.TraceInformation(string.Format("BookStatus={0}", reservation.BookStatus));
+
+            PickDropInfoTrace(reservation.PickDropInfo);
+
+            TraceExtra(reservation.Extra);
+        
+        }
+
+        private static void TraceAccount(NordCar.WebAPI.Models.EC.Account account)
+        { 
+            Trace.TraceInformation(string.Format("AccountType={0}",account.AccountType));
+            Trace.TraceInformation(string.Format("Title={0}",account.Title));
+            Trace.TraceInformation(string.Format("Gender={0}",account.Gender));
+            Trace.TraceInformation(string.Format("FirstName={0}",account.FirstName));
+            Trace.TraceInformation(string.Format("LastName={0}",account.LastName));
+            Trace.TraceInformation(string.Format("Address={0}",account.Address));
+            Trace.TraceInformation(string.Format("Address2={0}",account.Address2));
+            Trace.TraceInformation(string.Format("Address3={0}",account.Address3));
+            Trace.TraceInformation(string.Format("City={0}",account.City));
+            Trace.TraceInformation(string.Format("PostCode={0}",account.PostCode));
+            Trace.TraceInformation(string.Format("Country={0}",account.Country));
+            Trace.TraceInformation(string.Format("Email={0}",account.Email));
+            Trace.TraceInformation(string.Format("Phone={0}",account.Phone));
+            Trace.TraceInformation(string.Format("Password={0}",account.Password));
+            Trace.TraceInformation(string.Format("SecretQuestionId={0}",account.SecretQuestionId));
+            Trace.TraceInformation(string.Format("SecretQuestionAnswer={0}",account.SecretQuestionAnswer));
+
+            Trace.TraceInformation(string.Format("Driver.LicenseNumber={0}",account.Driver.LicenseNumber));
+            Trace.TraceInformation(string.Format("Driver.BirthDay={0}", account.Driver.BirthDay));
+            Trace.TraceInformation(string.Format("Driver.BirthCity={0}", account.Driver.BirthCity));
+            Trace.TraceInformation(string.Format("Driver.BirthCountry={0}", account.Driver.BirthCountry));
+            Trace.TraceInformation(string.Format("Driver.IssueDate={0}", account.Driver.IssueDate));
+            Trace.TraceInformation(string.Format("Driver.ExpiryDate={0}", account.Driver.ExpiryDate));
+            Trace.TraceInformation(string.Format("Driver.IssueCountry={0}", account.Driver.IssueCountry));
+
+            Trace.TraceInformation(string.Format("Identification.IdentityNumber={0}",account.Identification.IdentityNumber));
+            Trace.TraceInformation(string.Format("Identification.PassPortNumber={0}",account.Identification.PassPortNumber));
+            Trace.TraceInformation(string.Format("Identification.IssueDate={0}",account.Identification.IssueDate));
+            Trace.TraceInformation(string.Format("Identification.ExpiryDate={0}",account.Identification.ExpiryDate));
+            Trace.TraceInformation(string.Format("Identification.IssueCountry={0}", account.Identification.IssueCountry));
+
+            if (account.Basic != null)
+            {
+                Trace_Basic(account.Basic);
+            }
+            else
+            {
+                Trace.TraceInformation("Account.Basic not initiated");
+            }
+
+         }
+
+        #region Version
+        /// <summary>
+        /// GetLocations
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        //[HttpPost]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.Version))]
+        //public IHttpActionResult GetVersion(BasicStructure1 bStruct)
+        public IHttpActionResult GetVersion()
+        {
+            
+            var bs1 = fillbasics(FunctionList.Hello, BookTypes.ECBOOK);
+            //var bs1 = fillbasics(FunctionList.Hello, bStruct);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            var data = this.ECAPIManagerRepository.GetVersion(bs);
+
+            if (data.Item1.Succes)
+            {
+                Type t = typeof(NordCar.WebAPI.Controllers.ECController);
+                Assembly assemFromType = t.Assembly;
+
+                Type t2 = typeof(NordCar.Carla.Data.Repository.IECAPIManagerRepository);
+                Assembly assemFromType2 = t2.Assembly;
+
+
+                var vers = new NordCar.WebAPI.Models.EC.Version() { CarlaProgram = data.Item2, Data = assemFromType2.FullName, WebApi = assemFromType.FullName };
+                var result = new
+                {
+                    VersionInfo = vers,
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+
+        #endregion
+
+        #region GetBookTypes
+        
+      
+        public IHttpActionResult GetBookTypes()
+        {
+            try
+            {
+
+                var result = new
+                {
+                    booktypes = NordCar.Carla.Data.Entities.Helper.GetBookTypes()
+                };
+
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return Error(new Models.APIMethodControl() { ErrorCode = "", ErrorMessage = ex.Message, Succes = false, Message = "GetBookTypes() + could not load data" }, HttpStatusCode.InternalServerError);
+            }
+        }
+        #endregion
+
+        #region GetLocations
+        /// <summary>
+        /// GetLocations
+        /// </summary>
+        /// <param name="bookType">ex. ECBOOK or DAT</param>
+        /// <returns></returns>
+        [HttpGet]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.Location))]
+        public IHttpActionResult GetLocations(string bookType)
+        {
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                 return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.GetLocations, booktype);
+            
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            
+            var data = this.ECAPIManagerRepository.GetLocations(bs);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Locations = Mapper.Map<List<NordCar.Carla.Data.Entities.EC.Location>, List<NordCar.WebAPI.Models.EC.Location>>(data.Item2),
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+
+        #endregion
+
+        #region GetLocationDetails
+        /// <summary>
+        /// GetLocationDetails
+        /// </summary>
+        /// <param name="bookType">ex. ECBOOK or DAT</param>
+        /// <param name="id">Location id</param>
+        /// <returns></returns>
+        [HttpGet]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.LocationDetail))]
+        public IHttpActionResult GetLocationDetails(string bookType,string id)
+        {
+
+            Trace.TraceInformation(string.Format("ID={0}", id));
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.GetLocationDetails, booktype);
+            
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            
+            var data = this.ECAPIManagerRepository.GetLocationDetails(bs, id, System.DateTime.Today, 120);
+
+            if (data.Item1.Succes)
+            {
+
+                var result = new
+                {
+                    Location = Mapper.Map<NordCar.Carla.Data.Entities.EC.LocationDetail, NordCar.WebAPI.Models.EC.LocationDetail>(data.Item2),
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        #endregion
+
+        #region GetCountries
+        /// <summary>
+        /// GetCountries
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        //[HttpPost]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.Country))]
+        //public IHttpActionResult GetCountries(BasicStructure1 bStruct)
+        public IHttpActionResult GetCountries()
+        {
+            var bs1 = fillbasics(FunctionList.GetCountries, BookTypes.ECBOOK);
+            //var bs1 = fillbasics(FunctionList.GetCountries, bStruct);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            var data = this.ECAPIManagerRepository.GetCountries(bs);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Locations = Mapper.Map<List<NordCar.Carla.Data.Entities.EC.Country>, List<NordCar.WebAPI.Models.EC.Country>>(data.Item2),
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+
+        #endregion
+
+        #region GetAvailableCars
+
+        /// <summary>
+        /// GetAvailableCars
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="age"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.CarDetail))]
+        public IHttpActionResult GetAvailableCars(NordCar.WebAPI.Models.EC.PickDropInfo input, string age)
+        {
+
+            PickDropInfoTrace(input);
+            Trace.TraceInformation(string.Format("Age={0}",age));
+
+            if (input.Basic == null)
+                return BasicNotSet();
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(input.Basic.BookTypes);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(input.Basic.BookTypes);
+            }
+
+            var bs1 = fillbasics(FunctionList.GetAvailableCars, input.Basic);
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+           
+            var input1 = Mapper.Map<NordCar.WebAPI.Models.EC.PickDropInfo, NordCar.Carla.Data.Entities.EC.PickDropInfo>(input);
+
+            var data = this.ECAPIManagerRepository.GetAvailableCars(bs, input1, age);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    ListCars = Mapper.Map<List<NordCar.Carla.Data.Entities.EC.CarDetail>, List<NordCar.WebAPI.Models.EC.CarDetail>>(data.Item2),
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+
+       
+        #endregion
+
+        #region GetCarExtras
+
+        /// <summary>
+        /// GetCarExtras
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="carId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.CarExtra))]
+        public IHttpActionResult GetCarExtras(NordCar.WebAPI.Models.EC.PickDropInfo input, string productId)
+        {
+
+            PickDropInfoTrace(input);
+            Trace.TraceInformation(string.Format("productId", productId));
+
+            if (input.Basic == null)
+                return BasicNotSet();
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(input.Basic.BookTypes);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(input.Basic.BookTypes);
+            }
+          
+            var bs1 = fillbasics(FunctionList.GetCarExtras, input.Basic);
+            
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            
+            var input1 = Mapper.Map<NordCar.WebAPI.Models.EC.PickDropInfo, NordCar.Carla.Data.Entities.EC.PickDropInfo>(input);
+
+            var data = this.ECAPIManagerRepository.GetCarExtras(bs, input1, productId);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Extras = Mapper.Map<NordCar.Carla.Data.Entities.EC.CarExtra, NordCar.WebAPI.Models.EC.CarExtra>(data.Item2),
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        #endregion
+
+        #region UpdatePrice
+        /// <summary>
+        /// UpdatePrice
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.PriceCalculated))]
+        public IHttpActionResult UpdatePrice(NordCar.WebAPI.Models.EC.PricePart input)
+        {
+
+            TracePricePart(input);
+
+            if (input.PickDropInfo.Basic == null)
+                return BasicNotSet();
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(input.PickDropInfo.Basic.BookTypes);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(input.PickDropInfo.Basic.BookTypes);
+            }
+
+            var bs1 = fillbasics(FunctionList.UpdatePrices, input.PickDropInfo.Basic);
+           
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            
+            var input1 = Mapper.Map<NordCar.WebAPI.Models.EC.PricePart, NordCar.Carla.Data.Entities.EC.PricePart>(input);
+
+            var data = this.ECAPIManagerRepository.UpdatePrice(bs, input1);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Prize = Mapper.Map<NordCar.Carla.Data.Entities.EC.PriceCalculated, NordCar.WebAPI.Models.EC.PriceCalculated>(data.Item2),
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        #endregion
+
+        #region GetCarTypes
+        /// <summary>
+        /// GetCarTypes
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        //[HttpPost]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.CarType))]
+        //public IHttpActionResult GetCarTypes(BasicStructure1 bStruct)
+        public IHttpActionResult GetCarTypes()
+        {
+
+            var bs1 = fillbasics(FunctionList.GetCarTypes, BookTypes.ECBOOK);
+            //var bs1 = fillbasics(FunctionList.GetCarTypes, bStruct);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            var data = this.ECAPIManagerRepository.GetCarTypes(bs);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Types = Mapper.Map<List<NordCar.Carla.Data.Entities.EC.CarType>, List<NordCar.WebAPI.Models.EC.CarType>>(data.Item2),
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        #endregion
+
+        #region MakeReservation
+        /// <summary>
+        /// MakeReservation
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [ResponseType(typeof(NordCar.WebAPI.Models.RentalInfo))]
+        public IHttpActionResult MakeReservation(NordCar.WebAPI.Models.EC.Reservation input)
+        {
+
+            if (input.PickDropInfo.Basic == null)
+                return BasicNotSet();
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(input.PickDropInfo.Basic.BookTypes);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(input.PickDropInfo.Basic.BookTypes);
+            }
+
+
+            var bs1 = fillbasics(FunctionList.MakeReservation, input.PickDropInfo.Basic);
+            bs1.CustomerId = input.CustomerNo;
+
+            TraceReservation(input);
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            var input1 = Mapper.Map<NordCar.WebAPI.Models.EC.Reservation, NordCar.Carla.Data.Entities.EC.Reservation>(input);
+
+            var data = this.ECAPIManagerRepository.MakeReservation(bs, input1);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    RentalInfo = Mapper.Map<NordCar.Carla.Data.Entities.RentalInfo, NordCar.WebAPI.Models.RentalInfo>(data.Item2),
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        #endregion
+
+        #region SearchBooking
+        /// <summary>
+        /// SearchBooking
+        /// </summary>
+        /// <param name="reservationNo"></param>
+        /// <param name="email"></param>
+        /// <param name="lastName"></param>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        [HttpGet]
+        //[HttpPost]
+        [ResponseType(typeof(NordCar.WebAPI.Models.Booking))]
+        //public IHttpActionResult SearchBooking(string reservationNo, string email, string lastName, string date, BasicStructure1 bStruct)
+        public IHttpActionResult SearchBooking(string reservationNo, string email, string lastName, string date)
+        {
+
+            Trace.TraceInformation(string.Format("Reservation={0}", reservationNo));
+            Trace.TraceInformation(string.Format("Email={0}", email));
+            Trace.TraceInformation(string.Format("LastName={0}", lastName));
+            Trace.TraceInformation(string.Format("Date={0}", date));
+
+            var bs1 = fillbasics(FunctionList.SearchBooking, BookTypes.ECBOOK);
+            //var bs1 = fillbasics(FunctionList.SearchBooking, bStruct);
+            bs1.CustomerId = "";
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.SearchBooking(bs, reservationNo, email, date, lastName);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Bookings = Mapper.Map<List<NordCar.Carla.Data.Entities.EC.Booking>, List<NordCar.WebAPI.Models.EC.Booking>>(data.Item2),
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        #endregion
+
+        #region CancelBooking
+        /// <summary>
+        /// CancelBooking
+        /// Cancelling the reservation.
+        /// </summary>
+        /// <param name="reservationNo"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IHttpActionResult CancelBooking(string reservationNo)
+        {
+
+            Trace.TraceInformation(string.Format("Reservation={0}", reservationNo));
+          
+            var bs1 = fillbasics(FunctionList.CancelBooking, BookTypes.ECBOOK);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.CancelBooking(bs, reservationNo);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Cancelled = data.Item2.ToString(),
+                    Status = "OK"
+                };
+                return Ok(result);
+
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+
+        }
+        #endregion
+
+        #region GetPdfBooking
+        /// <summary>
+        /// GetPdfBooking
+        /// Returnning reservation as pdf
+        /// </summary>
+        /// <param name="reservationNo"></param>
+        /// <returns>PDF Document</returns>
+        [HttpGet]
+        public IHttpActionResult GetPdfBooking(string reservationNo = "")
+        {
+
+            Trace.TraceInformation(string.Format("Reservation={0}", reservationNo));
+          
+            var bs1 = fillbasics(FunctionList.GetPdfBooking, BookTypes.ECBOOK);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            //bs.OrgBookNr = resNo;
+
+            var data = this.ECAPIManagerRepository.GetPdfBooking(bs, 0, reservationNo, "");
+
+            if (data.Item1.Succes)
+            {
+                IHttpActionResult response;
+                HttpResponseMessage result = new HttpResponseMessage(HttpStatusCode.OK);
+                result.Content = new ByteArrayContent(data.Item2);
+                result.Content.Headers.ContentType =
+                    new MediaTypeHeaderValue("application/octet-stream");
+                response = ResponseMessage(result);
+                return response;
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+        }
+        #endregion
+
+        #region CreateAccount
+        /// <summary>
+        /// CreateAccount
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.CustomerAccount))]
+        public IHttpActionResult CreateAccount(NordCar.WebAPI.Models.EC.Account input)
+        {
+
+            TraceAccount(input);
+
+            //client error checks
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            //Adding default program
+            if (input.FrequentTravelerProgram == null)
+            {
+                input.FrequentTravelerProgram = new Models.EC.FrequentTravelerProgram() { Id = "0", CardNumber = "", ExpiryDate = "" };
+            }
+
+            //var bs1 = fillbasics(FunctionList.CreateAccount, BookTypes.ECBOOK);
+            var bs1 = fillbasics(FunctionList.CreateAccount, input.Basic);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            var input1 = Mapper.Map<NordCar.WebAPI.Models.EC.Account, NordCar.Carla.Data.Entities.EC.Account>(input);
+
+            var data = this.ECAPIManagerRepository.CreateAccount(bs, input1);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    CustomerAccount = Mapper.Map<NordCar.Carla.Data.Entities.EC.CustomerAccount, NordCar.WebAPI.Models.EC.CustomerAccount>(data.Item2),
+
+                    Status = "OK"
+                };
+                return Ok(result);
+
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+
+        }
+        #endregion
+
+        #region Login
+        /// <summary>
+        /// Login
+        /// </summary>
+        /// <param name="userId"> Email Address</param>
+        /// <param name="password">Password</param>
+        [HttpPost]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.CustomerAccount))]
+        //public IHttpActionResult Login(string userId, string password)
+        public IHttpActionResult Login(NordCar.WebAPI.Models.EC.LoginInfo login)
+        {
+
+            //var bs1 = fillbasics(FunctionList.ECLogin, BookTypes.ECBOOK);
+            var bs1 = fillbasics(FunctionList.ECLogin, login.Basic);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.Login(bs, "1", login.UserName, login.Password);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    CustomerAccount = Mapper.Map<NordCar.Carla.Data.Entities.EC.CustomerAccount, NordCar.WebAPI.Models.EC.CustomerAccount>(data.Item2),
+
+                    Status = "OK"
+                };
+                return Ok(result);
+
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+
+        }
+        #endregion
+
+        #region ForgotPassword
+        /// <summary>
+        /// ForgotPassword
+        /// </summary>
+        /// <param name="email">Email Address</param>
+        /// <returns>Password</returns>
+        [HttpGet]
+        public IHttpActionResult ForgotPassword(string email)
+        {
+
+            var bs1 = fillbasics(FunctionList.ForgotPassword, BookTypes.ECBOOK);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.ForgotPassword(bs, "1", email);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Password = data.Item2.ToString(),
+                    Status = "OK"
+                };
+                return Ok(result);
+
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+
+        }
+        #endregion
+
+        #region ModifyAccount
+        /// <summary>
+        /// ModifyAccount
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.CustomerAccount))]
+        public IHttpActionResult ModifyAccount(NordCar.WebAPI.Models.EC.CustomerAccount input)
+        {
+
+            TraceAccount(input);
+            Trace.TraceInformation(string.Format("CustomerNo={0}", input.CustomerNo));
+
+            //var bs1 = fillbasics(FunctionList.ModifyAccount, BookTypes.ECBOOK);
+            var bs1 = fillbasics(FunctionList.ModifyAccount, input.Basic);
+            bs1.CustomerId = input.CustomerNo;
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            var input1 = Mapper.Map<NordCar.WebAPI.Models.EC.CustomerAccount, NordCar.Carla.Data.Entities.EC.CustomerAccount>(input);
+
+            var data = this.ECAPIManagerRepository.ModifyAccount(bs, input1);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    CustomerAccount = Mapper.Map<NordCar.Carla.Data.Entities.EC.CustomerAccount, NordCar.WebAPI.Models.EC.CustomerAccount>(data.Item2),
+
+                    Status = "OK"
+                };
+                return Ok(result);
+
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+
+        }
+        #endregion
+
+        #region SecretQuestions
+        /// <summary>
+        /// SecretQuestions
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IHttpActionResult GetSecretQuestions()
+        {
+
+            var bs1 = fillbasics(FunctionList.SecretQuestions, BookTypes.ECBOOK);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.DropDownLists(bs);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Lists = Mapper.Map<List<NordCar.Carla.Data.Entities.EC.DropDownListItem>, List<NordCar.WebAPI.Models.EC.DropDownListItem>>(data.Item2),
+                    Status = "OK"
+                };
+                return Ok(result);
+
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+
+        }
+        #endregion
+
+        #region GetPaymentCardTypes
+        /// <summary>
+        /// PaymentCardTypes
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IHttpActionResult GetPaymentCardTypes()
+        {
+
+            var bs1 = fillbasics(FunctionList.PaymentCardTypes, BookTypes.ECBOOK);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.DropDownLists(bs);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Lists = Mapper.Map<List<NordCar.Carla.Data.Entities.EC.DropDownListItem>, List<NordCar.WebAPI.Models.EC.DropDownListItem>>(data.Item2),
+                    Status = "OK"
+                };
+                return Ok(result);
+
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+
+        }
+        #endregion
+
+        #region GetFrequentTravelerPrograms
+        /// <summary>
+        /// GetFrequentTravelerPrograms
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IHttpActionResult GetFrequentTravelerPrograms()
+        {
+
+            var bs1 = fillbasics(FunctionList.FrequentTravelerPrograms, BookTypes.ECBOOK);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.DropDownLists(bs);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Lists = Mapper.Map<List<NordCar.Carla.Data.Entities.EC.DropDownListItem>, List<NordCar.WebAPI.Models.EC.DropDownListItem>>(data.Item2),
+                    Status = "OK"
+                };
+                return Ok(result);
+
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+
+        }
+        #endregion
+
+        #region GetCarSpecifications
+        /// <summary>
+        /// GetCarSpecifications
+        /// </summary>
+        /// <param name="bookType"></param>
+        /// <param name="countryId"></param>
+        /// <param name="carType"></param>
+        /// <param name="carGroup"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IHttpActionResult GetCarSpecifications(string bookType, string countryId, string carType, string carGroup)
+        {
+
+            Trace.TraceInformation(string.Format("countryId={0}", countryId));
+            Trace.TraceInformation(string.Format("carType={0}", carType));
+            Trace.TraceInformation(string.Format("carGroup={0}", carGroup));
+            Trace.TraceInformation(string.Format("bookType={0}", bookType));
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.GetCarSpecifications, booktype);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.GetCarSpecifications(bs, countryId, carType, carGroup);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    CarSpec = Mapper.Map<List<NordCar.Carla.Data.Entities.EC.CarSpec>, List<NordCar.WebAPI.Models.EC.CarSpec>>(data.Item2),
+                    Status = "OK"
+                };
+                return Ok(result);
+
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+
+        }
+        #endregion
+
+        #region GetFleet
+        /// <summary>
+        /// GetFleet
+        /// </summary>
+        /// <param name="bookType"></param>
+        /// <param name="countryId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.CarSpec))]
+        public IHttpActionResult GetFleet(string bookType, string countryId)
+        {
+
+            Trace.TraceInformation(string.Format("countryId={0}", countryId));
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+         
+            var bs1 = fillbasics(FunctionList.GetCarSpecifications, booktype);
+            
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.GetCarSpecifications(bs, countryId, "", "");
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    CarSpec = Mapper.Map<List<NordCar.Carla.Data.Entities.EC.CarSpec>, List<NordCar.WebAPI.Models.EC.CarSpec>>(data.Item2),
+                    Status = "OK"
+                };
+                return Ok(result);
+
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+
+        }
+        #endregion
+
+        #region GetBookings
+        /// <summary>
+        /// GetBookings
+        /// </summary>
+        /// <param name="customerNo"></param>
+        [HttpGet]
+        [ResponseType(typeof(NordCar.WebAPI.Models.Booking))]
+        public IHttpActionResult GetBookings(string customerNo)
+        {
+
+            Trace.TraceInformation(string.Format("customerNo={0}", customerNo));
+         
+
+            var bs1 = fillbasics(FunctionList.SearchBooking, BookTypes.ECBOOK);
+            bs1.CustomerId = customerNo;
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.SearchBooking(bs, "", "", "", "");
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Bookings = Mapper.Map<List<NordCar.Carla.Data.Entities.EC.Booking>, List<NordCar.WebAPI.Models.EC.Booking>>(data.Item2),
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        #endregion
+
+        #region DibsResult
+        /// <summary>
+        /// DibsResult
+        /// </summary>
+        /// <param name="bookingId">Booking returned from MakeReservation function</param>
+        /// <param name="paymentFlag">[statuscode]</param>
+        /// <param name="paymentType">[paymentType]</param>
+        /// <param name="paymentCode">transact (1st DIBS reply)</param>
+        /// <param name="paymentAmount">TotalPrice [from MakeReservation]</param>
+        /// <param name="depositPaymentCode">transact (2nd DIBS reply)</param>
+        /// <param name="depositPaymentAmount">DepositOnline(DKK) [from MakeReservation]</param>
+        /// <returns></returns>
+        [HttpGet]
+        [ResponseType(typeof(DibsResultItem))]
+        public IHttpActionResult DibsResult(int bookingId, int paymentFlag, int paymentType, int paymentCode, int paymentAmount, int depositPaymentCode, int depositPaymentAmount)
+        {
+
+            Trace.TraceInformation(string.Format("bookingId={0}", bookingId));
+            Trace.TraceInformation(string.Format("paymentFlag={0}", paymentFlag));
+            Trace.TraceInformation(string.Format("paymentType={0}", paymentType));
+            Trace.TraceInformation(string.Format("paymentCode={0}", paymentCode));
+            Trace.TraceInformation(string.Format("paymentAmount={0}", paymentAmount));
+            Trace.TraceInformation(string.Format("depositPaymentCode={0}", depositPaymentCode));
+            Trace.TraceInformation(string.Format("depositPaymentAmount={0}", depositPaymentAmount));
+      
+      
+            var bs1 = fillbasics(FunctionList.ECDibsResult, BookTypes.ECBOOK);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            var data = this.ECAPIManagerRepository.DibsResult(bs, bookingId, paymentFlag, paymentType, paymentCode, paymentAmount, depositPaymentCode, depositPaymentAmount);
+
+            if (data.Item1.Succes)
+            {
+                return Ok(Mapper.Map<NordCar.Carla.Data.Entities.DibsResultItem, DibsResultItem>(data.Item2));
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+        }
+
+        #endregion
+
+        #region CheckPromotionCode
+        /// <summary>
+        /// CheckPromotionCode
+        /// </summary>
+        /// <param name="bookType"></param>
+        /// <param name="promotionCode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IHttpActionResult CheckPromotionCode(string bookType,string promotionCode)
+        {
+
+            Trace.TraceInformation(string.Format("promotionCode={0}", promotionCode));
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.CheckPromotionCode, booktype);
+            bs1.VoucherCode = promotionCode;
+            
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.CheckPromotionCode(bs);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    PromotionResult = data.Item2,
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        #endregion
+
+        #region GetCarTypesByLocation
+       /// <summary>
+        /// GetCarTypesByLocation
+       /// </summary>
+        /// <param name="bookType"></param>
+       /// <param name="locationId"></param>
+       /// <param name="country"></param>
+       /// <returns></returns>
+        [HttpGet]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.CarTypeLocationDetails))]
+        public IHttpActionResult GetCarTypesByLocationDetails(string bookType, string locationId, string country)
+        {
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+            
+            var bs1 = fillbasics(FunctionList.GetCarTypesByLocation, booktype);
+            
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            
+            var data = this.ECAPIManagerRepository.GetCarTypesByLocation(bs,locationId,country);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Types = Mapper.Map<List<NordCar.Carla.Data.Entities.EC.CarTypeLocationDetails>, List<NordCar.WebAPI.Models.EC.CarTypeLocationDetails>>(data.Item2),
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        #endregion
+
+        #region GetReservationText
+        /// <summary>
+        /// GetReservationText
+        /// </summary>
+        /// <param name="reservationNumber"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.ReservationText))]
+        public IHttpActionResult GetReservationText(string reservationNumber)
+        {
+
+            Trace.TraceInformation(string.Format("reservationNumber={0}", reservationNumber));
+
+           
+            var bs1 = fillbasics(FunctionList.GetReservationText, BookTypes.ECBOOK);
+           
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.GetReservationText(bs,reservationNumber);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    texts = Mapper.Map<NordCar.Carla.Data.Entities.EC.ReservationText,NordCar.WebAPI.Models.EC.ReservationText>(data.Item2),
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        #endregion
+
+        private NotFoundJSONActionResult BookTypeNotFound(string bookType)
+        { 
+            return Error(new APIMethodControl() { Succes=false, ErrorMessage=string.Format("Booktype {0} not found",bookType)}, HttpStatusCode.NotFound);
+        }
+
+        private NotFoundJSONActionResult BasicNotSet()
+        {
+            return Error(new APIMethodControl() { Succes = false, ErrorMessage = "Basic not set" }, HttpStatusCode.NotFound);
+        }
+    }
+}

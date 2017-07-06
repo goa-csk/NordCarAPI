@@ -1,0 +1,220 @@
+﻿using System;
+using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NordCar.Carla.Data.Entities;
+using System.Net;
+using System.Net.Sockets;
+using NordCar.Carla.Data.Repository;
+
+namespace NordCar.Carla.Data.Test
+{
+    [TestClass]
+    public class WebAPITests
+    {
+        private const string ip = "192.168.16.98";
+        //private const string ip = "192.168.80.9";
+        private const int port = 1074;
+        private const string logfile = @"c:\log\webapi.log";
+        
+
+        private BasicStructure fillbasics(FunctionList flist, BookTypes booktypes)
+        {
+            return new BasicStructure() { FunctionId = flist, Language = LanguageList.DA, BookTypes = booktypes, IPAddress = ip, CompanyDealId = "", CustomerId = "", ExtraId = "", VoucherCode = "", OrgBookNr = "", StepNr = "" };
+
+        }
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void HelloWorld()
+        {
+           // var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+           // var result = ccm.HelloWorld();
+           // Assert.IsNotNull(result);
+            
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F01_GetCarList_AllLocations_Test()
+        {
+             var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+             var result = ccm.GetCarsList(fillbasics(FunctionList.GetCarsList, BookTypes.PSBOOK),0);
+             Assert.AreEqual(result.Item2[0].LocationId, "52");
+          
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F02_GetPriceList_Loc53_Bilgruppe_noExtra_Test()
+        {
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+             var result = ccm.GetPriceList(fillbasics(FunctionList.GetPriceList, BookTypes.PSBOOK), 53, "");
+            Assert.IsNotNull(result);
+
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F03_GetAvailabillityList()
+        {
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+            var result = ccm.GetAvaiabillityList(
+                fillbasics(FunctionList.GetAvailabillityList,
+                BookTypes.PSBOOK),
+                53,
+                800,
+                53,
+                "A",
+                "19092014",
+                "24092014",
+                "0700",
+                "0700"); 
+                
+            Assert.IsNotNull(result);
+
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F04_SelectProduct()
+        {
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+            var result = ccm.SelectProduct(
+                fillbasics(FunctionList.SelectProduct,
+                BookTypes.PSBOOK),
+                53,
+                53,
+                "A",
+                "19092014",
+                "24092014",
+                "0700",
+                "0700",
+                800);
+
+            Assert.IsNotNull(result);
+
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F06_GetLocationList_AllLocations_Test()
+        {
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+            var result = ccm.GetLocationList(fillbasics(FunctionList.GetLocationList, BookTypes.PSBOOK), 0);
+            Assert.IsNotNull(result.Item2);
+
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F06_GetLocationList_Location_61_Test()
+        {
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+            var result = ccm.GetLocationList(fillbasics(FunctionList.GetLocationList, BookTypes.PSBOOK), 61);
+            Assert.AreEqual(result.Item2[0].LocationId,"61");
+
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F12_CancelRental_Test()
+        {
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+            var result = ccm.CancelRental(fillbasics(FunctionList.CancelRental, BookTypes.PSBOOK), 103423248);
+            Assert.AreEqual(result.Item2, true);
+
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F15_GetFrontPageDefaults()
+        {
+            //PS
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+            var result = ccm.GetFrontPageDefault(fillbasics(FunctionList.GetFrontPageDefault, BookTypes.PSBOOK));
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F18_GetInvalidPickupDates_station3_apr()
+        {
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+            var result = ccm.GetInvalidPickupDatas(fillbasics(FunctionList.GetInvalidPickupDates, BookTypes.PSBOOK), 3, "A", "2014", "3");
+            Assert.AreEqual(result.Item2.InvalidDate, "");
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F18_GetInvalidPickupDates_station3_dec()
+        {
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+            var result = ccm.GetInvalidPickupDatas(fillbasics(FunctionList.GetInvalidPickupDates, BookTypes.PSBOOK),3,"A","2014","12");
+            Assert.AreEqual(result.Item2.InvalidDate,"25122014");
+
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F18_GetInvalidPickupDates_station3_nov()
+        {
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+            var result = ccm.GetInvalidPickupDatas(fillbasics(FunctionList.GetInvalidPickupDates, BookTypes.PSBOOK), 3, "A", "2014", "11");
+            Assert.AreEqual(result.Item2.InvalidDate,"");
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F19_GetInvalidReturnDates_station3_dec()
+        {
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+            var result = ccm.GetInvalidReturnDates(fillbasics(FunctionList.GetInvalidReturnDates, BookTypes.PSBOOK), 3, "A", "2014", "12", "19122014");
+            Assert.AreEqual(result.Item2.InvalidDate, "25122014");
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F20_GetOpenHours_station52()
+        {
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+            var result = ccm.GetOpenHours(fillbasics(FunctionList.GetOpenHours, BookTypes.PSBOOK), 52, DateTime.Now.ToString("ddMMyyyy"), 1);
+            Assert.IsNotNull(result);
+
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F22_ReturnProductDeff()
+        {
+
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+            var bs = fillbasics(FunctionList.Func22, BookTypes.DON2BOOK);
+            var result = ccm.ReturnProductDefs(bs);
+
+            Assert.IsNotNull(result);
+
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void F23_PDF()
+        {
+            int bookingId = 26642739; //Reservation No
+            
+            var ccm = new Carla.Data.Implementation.WebAPIManagerRepository(ip, port, logfile);
+            var bs = fillbasics(FunctionList.PDF, BookTypes.DON2BOOK);
+            bs.OrgBookNr = bookingId.ToString();
+            var result = ccm.PDF(bs,0, bookingId.ToString(), "");
+            System.IO.File.WriteAllBytes("hello3.pdf", result.Item2);
+            //Assert.IsNotNull(result);
+
+        }
+
+       
+
+
+        private string myIP()
+        {
+            return Dns.GetHostEntry(Dns.GetHostName()).AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork).ToString();
+        }
+    }
+}

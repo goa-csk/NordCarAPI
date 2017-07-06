@@ -1,0 +1,85 @@
+﻿using AutoMapper;
+using NordCar.Carla.Data.Repository;
+using NordCar.WebAPI.BootStrapper;
+using NordCar.WebAPI.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using System.Web.Http.Description;
+
+namespace NordCar.WebAPI.Controllers
+{
+    public class PromotionController : BaseAPIController
+    {
+         /// <summary>
+        /// Initialise a variable of IContactsManagerRepository from data layer
+        /// </summary>
+        protected readonly IECAPIManagerRepository ECAPIManagerRepository;
+        /// <summary>
+        /// Inject repository
+        /// </summary>
+        /// <param name="_repository">IPSAPIManagerRepository</param>
+        public PromotionController(IECAPIManagerRepository _repository)
+        {
+            if (_repository == null)
+            {
+                throw new ArgumentNullException("ECAPIManagerManager Repository exception");
+            }
+
+            this.ECAPIManagerRepository = _repository;
+
+            var bs = new Bootstrapper();
+            bs.Initialize();
+
+            Log.Info("PromotionController created");
+        }
+
+        [HttpGet]
+        [ResponseType(typeof(NordCar.WebAPI.Models.EC.Location))]
+        public IHttpActionResult GetPromotionCodeList(string bookType, string countryId = "")
+        {
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.GetPromotionCodeList, booktype);
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.GetPromotionCodeList(bs);
+
+            if (data.Item1.Succes)
+            {
+                var result = new
+                {
+                    Locations = Mapper.Map<List<NordCar.Carla.Data.Entities.Promotion.Promotion>, List<NordCar.WebAPI.Models.Promotion.Promotion>>(data.Item2),
+                    Status = "OK"
+                };
+
+                return Ok(result);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+
+        private NotFoundJSONActionResult BookTypeNotFound(string bookType)
+        {
+            return Error(new APIMethodControl() { Succes = false, ErrorMessage = string.Format("Booktype {0} not found", bookType) }, HttpStatusCode.NotFound);
+        }
+
+        private NotFoundJSONActionResult BasicNotSet()
+        {
+            return Error(new APIMethodControl() { Succes = false, ErrorMessage = "Basic not set" }, HttpStatusCode.NotFound);
+        }
+    }
+}

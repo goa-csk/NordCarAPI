@@ -1,0 +1,53 @@
+<MakeReservation>
+  <MethodParameters>
+    <reservation>
+      <AgreementId>0</AgreementId>
+      <CustomerReferenceNumber>34563458_A</CustomerReferenceNumber>
+      <ECContractNumer isNull="false" />
+      <ECReservationNumer isNull="false" />
+      <driver>
+        <Name>Claus</Name>
+        <Phone>556565</Phone>
+        <address>
+          <City>Galten</City>
+          <Country>DK</Country>
+          <Street>Nattergalevej 20</Street>
+          <ZipCode>8464</ZipCode>
+        </address>
+      </driver>
+      <rental>
+        <AutomaticGear>False</AutomaticGear>
+        <CarBrand>Renault</CarBrand>
+        <CarModel>Megane</CarModel>
+        <ChilSeat>False</ChilSeat>
+        <DateIn>01-12-2016</DateIn>
+        <DateOut>12-12-2016</DateOut>
+        <Delivery>False</Delivery>
+        <DeliveryAdress>
+          <City isNull="false" />
+          <Country isNull="false" />
+          <Street isNull="false" />
+          <ZipCode isNull="false" />
+        </DeliveryAdress>
+        <ECDepartmentInfo>jajajajajaja</ECDepartmentInfo>
+        <ExtraDriver>False</ExtraDriver>
+        <FuelDeposit>False</FuelDeposit>
+        <GPS>False</GPS>
+        <MaxGOP>0</MaxGOP>
+        <Pickup>False</Pickup>
+        <PickupAdress>
+          <City isNull="false" />
+          <Country isNull="false" />
+          <Street isNull="false" />
+          <ZipCode isNull="false" />
+        </PickupAdress>
+        <SOSCustomerInfo>nenenenen</SOSCustomerInfo>
+        <StationOutId>12</StationOutId>
+        <TimeIn>10:00</TimeIn>
+        <TimeOut>11:00</TimeOut>
+        <Towbar>False</Towbar>
+        <WinterTires>False</WinterTires>
+      </rental>
+    </reservation>
+  </MethodParameters>
+</MakeReservation>

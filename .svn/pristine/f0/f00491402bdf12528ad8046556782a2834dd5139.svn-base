@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Note: Add entries to the App.config file for configuration settings
+    that apply only to the Test project.
+-->
+<configuration>
+    <appSettings>
+
+    </appSettings>
+  <system.diagnostics>
+    <switches>
+      <!-- This switch controls data messages. In order to receive data 
+         trace messages, change value="0" to value="1" -->
+      <add name="DataMessagesSwitch" value="0" />
+      <!-- This switch controls general messages. In order to 
+         receive general trace messages change the value to the 
+         appropriate level. "1" gives error messages, "2" gives errors 
+         and warnings, "3" gives more detailed error information, and 
+         "4" gives verbose trace information -->
+      <add name="TraceLevelSwitch" value="4" />
+    </switches>
+    <trace autoflush="true" indentsize="4">
+
+      <listeners>
+        <add name="myListener" type="System.Diagnostics.TextWriterTraceListener" initializeData="TextWriterOutput.log"  />
+        <remove name="Default" />
+      </listeners>
+    </trace>
+  </system.diagnostics>
+    <connectionStrings>
+
+    </connectionStrings>
+  <runtime>
+    <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+      <dependentAssembly>
+        <assemblyIdentity name="WebGrease" publicKeyToken="31bf3856ad364e35" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-1.6.5135.21930" newVersion="1.6.5135.21930" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Antlr3.Runtime" publicKeyToken="eb42632606e9261f" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-3.5.0.2" newVersion="3.5.0.2" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-4.5.0.0" newVersion="4.5.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Net.Http.Formatting" publicKeyToken="31bf3856ad364e35" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-5.2.3.0" newVersion="5.2.3.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.Http" publicKeyToken="31bf3856ad364e35" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-5.2.3.0" newVersion="5.2.3.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.Cors" publicKeyToken="31bf3856ad364e35" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-5.2.2.0" newVersion="5.2.2.0" />
+      </dependentAssembly>
+    </assemblyBinding>
+  </runtime>
+</configuration>

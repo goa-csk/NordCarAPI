@@ -1,0 +1,470 @@
+﻿using NordCar.Carla.Data.Entities;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NordCar.Carla.Data.Infrastructure
+{
+
+    public class CarlaTime
+    { 
+        public string DateString { get; set; }
+        public string TimeString { get; set; }
+    }
+
+    public class ReceivedLine
+    {
+        public int LineNo { get; set;}
+        public bool HasListInList { get; set;}
+        public int ListInLIstIndex { get; set; }
+        public string[] Data { get; set; }
+    }
+    
+    public class Helpers
+    {
+
+        public static string ConvertStringArrayToString(string[] array)
+        {
+            //
+            // Concatenate all the elements into a StringBuilder.
+            //
+            StringBuilder builder = new StringBuilder();
+            foreach (string value in array)
+            {
+                builder.Append(value);
+                
+            }
+            return builder.ToString();
+        }
+        
+        public static void AsciiReceiver(string s)
+        {
+
+            byte[] asciiBytes = Encoding.ASCII.GetBytes(s);
+
+            for (int i = 0; i < s.Length; i++)
+            {
+                Debug.WriteLine(s.Substring(i, 1) + " as ASCII value of: " + asciiBytes[i]);
+            }
+        }
+
+        public static string[] DecodeString(string str)
+        {
+
+            //AsciiReceiver(str);
+            
+            var txt = str.Replace("\r\n", "").Replace("\r", "").Replace("\n", "");
+
+            StringBuilder sb = new StringBuilder();
+
+            int count = 0;
+
+            foreach (char c in txt)
+        
+                if (c == (char)28) count++;
+            
+            string[] res = new string[count];
+            
+            
+            var resCount = 0;
+            
+            for (int ctr = 0; ctr < txt.Length; ctr++)
+            {
+
+                if (txt[ctr] == (char)13)
+                {
+                    break;
+                }
+
+                if (txt[ctr] == (char)28)
+                {
+                    res[resCount] = sb.ToString();
+                    sb.Clear();
+                    resCount++;
+                }
+                else
+                {
+                    sb.Append(txt[ctr]);
+
+                }
+            }
+
+
+
+            return res;
+        }
+
+        public static string DecodeString3(string str)
+        {
+
+            //AsciiReceiver(str);
+
+            var txt = str.Replace("\r\n", "").Replace("\r", "").Replace("\n", "");
+
+            StringBuilder sb = new StringBuilder();
+
+            int count = 0;
+
+            foreach (char c in txt)
+
+                if (c == (char)28) count++;
+
+            //string[] res = new string[count];
+            string res = "";
+
+            var resCount = 0;
+
+            for (int ctr = 0; ctr < txt.Length; ctr++)
+            {
+
+                if (txt[ctr] == (char)13)
+                {
+                    break;
+                }
+
+                if (txt[ctr] == (char)28)
+                {
+                    res = res + sb.ToString();
+                    sb.Clear();
+                   // resCount++;
+                }
+                else
+                {
+                    sb.Append(txt[ctr]);
+
+                }
+            }
+            return res;
+        }
+
+        private static ReceivedLine BuildReceiveLine(string str, int lineNo)
+        {
+            //Remove last FS char28
+            string t = str.Remove(str.Length - 1);
+            var input = t.Split((char)28);
+            
+            int indexNo = 0;
+            
+            bool haslistinlist = false;
+
+
+            for (int i = 0; i < input.Length; i++)
+            {
+
+                string temp = input[i];
+ 
+                foreach (char c in temp)
+                {
+                    if (c == (char)30)
+                    {
+                        haslistinlist = true;
+                        indexNo = i;
+                        
+                    }
+                }
+
+                input[i] = temp.Replace((char)28, (char)32).Replace((char)30, (char)32).Trim();
+                
+            
+            }
+                //ListInList
+                //foreach (string s in input)
+                //{
+
+                //    indexNo++;
+
+                //    foreach (char c in s)
+                //    {
+                //        if (c == (char)30)
+                //        {
+                //            haslistinlist = true;
+                //            break;
+                //        }
+                //    }
+
+
+
+                //    if (haslistinlist)
+                //        break;
+
+                //}
+
+            return (new ReceivedLine() { HasListInList = haslistinlist, LineNo = lineNo, Data = input, ListInLIstIndex = indexNo});
+        
+        }
+
+        /// <summary>
+        /// FromUTCToLocalCarlaTime
+        /// </summary>
+        /// <param name="UTCDateTimestring"></param>
+        /// <returns></returns>
+        public static CarlaTime FromUTCToLocalCarlaTime(string UTCDateTimestring)
+        {
+            //To local time
+            var dt = Convert.ToDateTime(UTCDateTimestring).ToLocalTime();
+
+            //Make Carla date/time dd-MM-yyyy tt:mm
+            var carla_date = string.Format("{0}-{1}-{2}", dt.Day.ToString("00"), dt.Month.ToString("00"), dt.Year);
+            var carla_tid = string.Format("{0}:{1}", dt.Hour.ToString("00"), dt.Minute.ToString("00"));
+
+            return new CarlaTime() { DateString = carla_date, TimeString = carla_tid };
+
+       
+        }
+
+        /// <summary>
+        /// FromLocalCarlaTimeToUTC
+        /// </summary>
+        /// <param name="date"></param>
+        /// <param name="time"></param>
+        /// <returns>Datetime</returns>
+        public static DateTime FromLocalCarlaTimeToUTC(string date, string time)
+        {
+            //To utc time
+            return FromLocalCarlaTimeToDateTime(date, time).ToUniversalTime();
+        }
+
+        public static DateTime FromLocalCarlaTimeToDateTime(string date, string time)
+        {
+             return Convert.ToDateTime(string.Format("{0}-{1}-{2} {3}:{4}", date.Substring(0, 2), date.Substring(2, 2), date.Substring(4, 4), time.Substring(0, 2), time.Substring(2, 2)));
+        }
+
+
+        public static List<ReceivedLine> DecodeString2(string str)
+        {
+
+            var receivedLines = new List<ReceivedLine>();
+
+            
+            var Lines = str.Replace("\r", "").Split((char)10);
+            
+            //Note : sidste linie er tom
+            for (int i = 0; i < Lines.Length-1; i++)
+            {
+                receivedLines.Add(BuildReceiveLine(Lines[i].Replace("\n", ""), i + 1));
+            }
+            
+            return receivedLines;
+        }
+       
+        public static string EncodeString(string[] str)
+        {
+            var terminering = (char)13;
+            var skelletegn = (char)28;
+
+            StringBuilder sb = new StringBuilder();
+ 
+            for (int ctr = 0; ctr <= str.GetUpperBound(0); ctr++)
+            {
+                sb.Append(str[ctr]);
+                sb.Append(skelletegn);
+            }
+            
+            sb.Append(terminering);
+
+            return sb.ToString();
+        }
+
+        public static string ConvertBoolToString(bool value)
+        {
+            if (value)
+                return "1";
+            else if (!value)
+                return "0";
+            else
+                throw new FormatException("The value is not a recognized as a valid boolean value.");
+        }
+
+        public static bool ConvertStringToBool(string value)
+        {
+            if (value == "1")
+                return true;
+            else if (value == "0" || value==string.Empty)
+                return false;
+            else
+                throw new FormatException("The value is not a recognized as a valid boolean value.");
+        }
+
+        public static int StringEmptyToInt(string str)
+        {
+            if (str == string.Empty)
+            {
+                return 0;
+
+            }
+            else
+            {
+                return int.Parse(str);
+            }
+        }
+
+        public static double StringEmptyToDouble(string str)
+        {
+            if (str == string.Empty)
+            {
+                return 0;
+
+            }
+            else
+            {
+                return double.Parse(str);
+            }
+        }
+
+        public static string FormatDate(string value)
+        {
+            try
+            {
+                return string.Format("{2}-{1}-{0}", value.Substring(0, 2), value.Substring(2, 2), value.Substring(4, 4));
+            }
+            catch
+            {
+                throw new FormatException(string.Format("The value is not a recognized as a valid date-string value {0}.",value));
+            }
+         }
+
+        public static string FormatDateAndTime(string value)
+        {
+            //yyyy-MM-dd hh:mm
+            try
+            {
+                return string.Format("{2}-{1}-{0} {3}:{4}", value.Substring(0, 2), value.Substring(2, 2), value.Substring(4, 4), value.Substring(8, 2), value.Substring(10, 2));
+            }
+            catch
+            {
+                throw new FormatException(string.Format("The value is not a recognized as a valid date-string value {0}.", value));
+            }
+        }
+
+        public static string DateAndTimeToCarla(string value)
+        {
+            //ddMMYYYYhhmm
+            try
+            {
+                return string.Format("{2}{1}{0}{3}{4}", value.Substring(0, 4), value.Substring(5, 2), value.Substring(8, 2), value.Substring(11, 2), value.Substring(14, 2));
+            }
+            catch
+            {
+                throw new FormatException(string.Format("The value is not a recognized as a valid date-string value {0}.", value));
+            }
+        }
+
+        public static string DateToCarla(string value)
+        {
+            //ddMMYYYY
+            try
+            {
+                return string.Format("{2}{1}{0}", value.Substring(0, 4), value.Substring(5, 2), value.Substring(8, 2));
+            }
+            catch
+            {
+                throw new FormatException(string.Format("The value is not a recognized as a valid date-string value {0}.", value));
+            }
+        }
+        /// <summary>
+        /// Convert a HexAscii encoded string to a byte array
+        /// </summary>
+        /// <param name="Data"></param>
+        /// <returns></returns>
+        public static byte[] HexAscii2Bytes(string Data)
+        {
+            if (Data.Length % 2 != 0)
+                throw new ArgumentException("Must contain an even number of chars");
+
+            var result = new byte[Data.Length / 2];
+            int index = 0;
+            while (Data.Length > 0)
+            {
+                // take two chars and convert into hex value using substring.
+                result[index] = (Byte)Convert.ToUInt32(Data.Substring(0, 2), 16);
+                index++;
+                Data = Data.Substring(2, Data.Length - 2);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Encode a Byte array to a hesAscii encoded string
+        /// </summary>
+        /// <param name="Data"></param>
+        /// <returns></returns>
+        public static string Bytes2HexAscii(byte[] Data)
+        {
+            string result = string.Empty;
+            foreach (Byte b in Data)
+            {
+                result += AsciiCode2Char((b & 0xF0) >> 4);
+                result += AsciiCode2Char(b & 0x0F);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Convert char code 0-15 to Ascii char '0'-'9' and 'A'-'F'
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        private static Char AsciiCode2Char(int code)
+        {
+            if (code < 10)
+                return (Char)(code + 0x30);
+            else
+                return (Char)(code + 0x37);
+        }
+
+        public static string ConvertDateTimeToCarlaDateTime(DateTime dtstr)
+        {
+            return dtstr.ToString("ddMMyyyy");
+        }
+
+        public static DateTime ConvertCarlaDateTimeString_ToDateTime(string dtstr)
+        {
+            CultureInfo provider = CultureInfo.InvariantCulture;
+
+            return DateTime.ParseExact(dtstr,"ddMMyyyy",provider);
+        }
+
+        public static string ConvertCarlaDateStringToNovicellDateString(string dtstr)
+        {
+            return string.Format("{0}-{1}-{2}", dtstr.Substring(0, 2), dtstr.Substring(2, 2), dtstr.Substring(4, 4));
+        }
+
+        public static string ConvertCarlaTimeStringToNovicellTimeString(string dtstr)
+        {
+            return string.Format("{0}:{1}", dtstr.Substring(0, 2), dtstr.Substring(2, 2));
+        }
+
+
+        public static string ConvertNovicellDateStringToCarlaDateString(string dtstr)
+        {
+            return dtstr.Replace("-", "");
+        }
+
+        public static string ConvertDateTimeToNovicellDateString(DateTime dtstr)
+        {
+            return dtstr.ToString("dd-MM-yyyy");
+        }
+
+        public static string ConvertDateTimeToNovicellTime(DateTime dtstr)
+        {
+            return dtstr.ToString("hh:mm");
+        }
+
+        public static bool ConvertStringToBool2(string str)
+        {
+            if (str == "1")
+                return true;
+            else
+                return false;
+        
+        }
+    }
+
+
+
+ }
+

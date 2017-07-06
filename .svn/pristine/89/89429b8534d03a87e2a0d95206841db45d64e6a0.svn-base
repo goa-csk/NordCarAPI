@@ -1,0 +1,19 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace NordCar.WebAPI.Models.Promotion
+{
+    public class Promotion
+    {
+        public string Id { get; set; } //Unigue name
+        public int Enable { get; set; } //0 = off, 1 = Skranke, 2=web, 3=1+2
+        public int CountLimit { get; set; } //0 = ubegrænset
+        public string FromDate { get; set; }
+        public string ToDate { get; set; }
+        public string DiscountSheetId { get; set; }
+        public int UsedCount { get; set; }
+        public string DisplayName { get; set; }
+    }
+}

@@ -1,0 +1,71 @@
+﻿using NordCar.Carla.Data.Entities;
+using NordCar.Carla.Data.Entities.EC;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NordCar.Carla.Data.Repository
+{
+    public interface IECAPIManagerRepository
+    {
+        //Function nr. 0
+        Tuple<APIMethodControl, string> GetVersion(BasicStructure basic);
+        //Function nr. 24
+        Tuple<APIMethodControl, List<NordCar.Carla.Data.Entities.EC.Location>> GetLocations(BasicStructure basic, string countryId, string carGroupId); 
+        //Function nr. 25
+        Tuple<APIMethodControl, NordCar.Carla.Data.Entities.EC.LocationDetail> GetLocationDetails(BasicStructure basic, string id, DateTime StartDate, int PeriodLengthInDays);
+        //Function nr. 26
+        Tuple<APIMethodControl, List<NordCar.Carla.Data.Entities.EC.Country>> GetCountries(BasicStructure basic);
+        //Function nr. 27
+        Tuple<APIMethodControl, List<NordCar.Carla.Data.Entities.EC.CarDetail>> GetAvailableCars(BasicStructure basic, NordCar.Carla.Data.Entities.EC.PickDropInfo input, string age);
+        //Function nr. 28
+        Tuple<APIMethodControl, List<NordCar.Carla.Data.Entities.EC.CarType>> GetCarTypes(BasicStructure basic); 
+        //Function nr. 29
+        Tuple<APIMethodControl, NordCar.Carla.Data.Entities.EC.CarExtra> GetCarExtras(BasicStructure basic, NordCar.Carla.Data.Entities.EC.PickDropInfo input, string productId, string age);
+        //Function nr. 30
+        Tuple<APIMethodControl, NordCar.Carla.Data.Entities.EC.PriceCalculated> UpdatePrice(BasicStructure basic, NordCar.Carla.Data.Entities.EC.PricePart input, string age);
+        //Function nr. 31
+        Tuple<APIMethodControl,RentalInfo> MakeReservation(BasicStructure basic, NordCar.Carla.Data.Entities.EC.Reservation input);
+        //Function nr. 32
+        Tuple<APIMethodControl, List<NordCar.Carla.Data.Entities.EC.Booking>> SearchBooking(BasicStructure basic, string reservationNo, string email, string pickupDate, string lastName);
+        //Function nr. 33
+        Tuple<APIMethodControl, bool> CancelBooking(BasicStructure basic, string reservationNo);
+        //Function nr. 34
+        Tuple<APIMethodControl, byte[]> GetPdfBooking(BasicStructure basic, int pdfType, string reservationNo, string email);
+        //Function nr. 35
+        Tuple<APIMethodControl, NordCar.Carla.Data.Entities.EC.CustomerAccount> CreateAccount(BasicStructure basic, NordCar.Carla.Data.Entities.EC.Account account);
+        //Function nr. 36
+        Tuple<APIMethodControl, NordCar.Carla.Data.Entities.EC.CustomerAccount> Login(BasicStructure basic, string loginType, string userId, string password);
+        //Function nr. 37
+        Tuple<APIMethodControl, string> ForgotPassword(BasicStructure basic, string loginType, string userId);
+        //Function nr. 38
+        Tuple<APIMethodControl, NordCar.Carla.Data.Entities.EC.CustomerAccount> ModifyAccount(BasicStructure basic, NordCar.Carla.Data.Entities.EC.CustomerAccount account);
+        //Function nr. 39
+        Tuple<APIMethodControl, List<NordCar.Carla.Data.Entities.EC.CarSpec>> GetCarSpecifications(BasicStructure basic, string countryId, string cartype, string carGroup, string age);
+        //Function nr. 40,41,42
+        Tuple<APIMethodControl, List<NordCar.Carla.Data.Entities.EC.DropDownListItem>> DropDownLists(BasicStructure basic);
+        //Function nr. 43
+        Tuple<APIMethodControl, List<NordCar.Carla.Data.Entities.EC.Exception>> GetLocationDateExceptions(BasicStructure basic, string LocationId, DateTime StartDate, int PeriodLengthInDays );
+        //Function nr 44
+        Tuple<APIMethodControl, DibsResultItem> DibsResult(BasicStructure basic, int bookingId, int paymentFlag, int paymentType, int paymentCode, int paymentAmount, int depositPaymentCode, int depositPaymentAmount);
+        //Function nr 45
+        Tuple<APIMethodControl, string> CheckPromotionCode(BasicStructure basic);
+        //Function nr 46
+        Tuple<APIMethodControl, List<NordCar.Carla.Data.Entities.EC.CarTypeLocationDetails>> GetCarTypesByLocation(BasicStructure basic, string LocationId, string Country);
+        //Function nr 47
+        Tuple<APIMethodControl, ReservationText> GetReservationText(BasicStructure basic, string reservationNo);
+        //Function nr 57 (SOS)
+        Tuple<APIMethodControl, QueueInfo> GetReservationStatusQueue(BasicStructure basic, string customerAgreementNumber);
+        //Function nr 58 (SOS)
+        Tuple<APIMethodControl, string> ReservationStatusQueueMessageProcessed(BasicStructure basic, string messageId);
+        //Function nr 59 (SOS)
+        Tuple<APIMethodControl, ResRAData> GetResRAData(BasicStructure basic, string messageId);
+
+    
+       
+
+    }
+}
+  

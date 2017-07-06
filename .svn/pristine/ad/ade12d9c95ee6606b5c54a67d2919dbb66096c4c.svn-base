@@ -1,0 +1,169 @@
+﻿using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using NordCar.WebAPI.Models;
+using System.Web;
+using System.Reflection;
+using log4net.Config;
+using static NordCar.WebAPI.Messages.MyExceptionHandler;
+using NordCar.Carla.Shared.Logging;
+
+namespace NordCar.WebAPI.Controllers
+{
+    public class BaseAPIController : ApiController
+    {
+        protected static readonly ILogger Log = LoggerManager.CreateLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private const string ApplicationJson = "application/json";
+        private const string Organization = "NORDCAR"; //ALL GENERAL FUNCTIONS
+        protected BaseAPIController()
+        {
+            XmlConfigurator.Configure(); 
+        }
+        
+        protected BookTypes ConvertIntToBookType(int val)
+        {
+            return (BookTypes)val;
+
+        }
+
+        protected BasicStructure fillbasics()
+        {
+            return fillbasics(Organization);
+        }
+
+        protected BasicStructure fillbasics(string booktypes)
+        {
+            BasicStructure1 tempStructure = new BasicStructure1() { BookTypes = booktypes };
+            return fillbasics(tempStructure);
+            //return new BasicStructure() { FunctionId = flist, Language = LanguageList.DA, BookTypes = booktypes, IPAddress = GetClientIp(Request), CompanyDealId = "", CustomerId = "", ExtraId = "", VoucherCode = "", OrgBookNr = "", StepNr = "" };
+        }
+
+        protected BasicStructure fillbasics(BasicStructure1 bStruct)
+        {
+            BasicStructure tempStructure = new BasicStructure();
+
+            if (bStruct == null) //Default value if empty
+            {
+                tempStructure.BookTypes = "";
+                tempStructure.Language = LanguageList.DA;
+
+                if (bStruct == null)
+                {
+                    tempStructure.IPAddress = GetClientIp(Request);
+             
+                }
+                else
+                {
+                    if (bStruct.IPAddress.Trim() != "" )
+                        tempStructure.IPAddress = bStruct.IPAddress;
+                    else
+                        tempStructure.IPAddress = GetClientIp(Request);
+                }
+             
+                tempStructure.CompanyDealId = "";
+                tempStructure.CustomerId = "";
+                tempStructure.ExtraId = "";
+                tempStructure.VoucherCode = "";
+                tempStructure.OrgBookNr = "";
+                tempStructure.StepNr = "";
+            }
+            else
+            {
+                tempStructure.BookTypes = (bStruct.BookTypes == null ? Organization : bStruct.BookTypes);
+                tempStructure.Language = (bStruct.Language == null ? LanguageList.DA : ConvertLanguageFromString(bStruct.Language));
+                tempStructure.IPAddress = bStruct.IPAddress ?? GetClientIp(Request);
+                tempStructure.CompanyDealId = bStruct.CompanyDealId ?? "";
+                tempStructure.CustomerId = bStruct.CustomerId ?? "";
+                tempStructure.ExtraId = bStruct.ExtraId ?? "";
+                tempStructure.VoucherCode = bStruct.VoucherCode ?? "";
+                tempStructure.OrgBookNr = bStruct.OrgBookNr ?? "";
+                tempStructure.StepNr = bStruct.StepNr ?? "";
+            }
+
+
+            return new BasicStructure() {Language = tempStructure.Language, BookTypes = tempStructure.BookTypes, IPAddress = tempStructure.IPAddress, CompanyDealId = tempStructure.CompanyDealId, CustomerId = tempStructure.CustomerId, ExtraId = tempStructure.ExtraId, VoucherCode = tempStructure.VoucherCode, OrgBookNr = tempStructure.OrgBookNr, StepNr = tempStructure.StepNr };
+
+        }
+
+        BookTypes ConvertBookTypeFromString(string bookType)
+        {
+            BookTypes rtnVal = BookTypes.ECBOOK;
+            switch (bookType)
+            {
+                case "DON2BOOK":
+                    rtnVal = BookTypes.DON2BOOK;
+                    break;
+                case "PSBOOK":
+                    rtnVal = BookTypes.PSBOOK;
+                    break;
+                case "DAT":
+                    rtnVal = BookTypes.DAT;
+                    break;
+                case "SOS":
+                    rtnVal = BookTypes.SOS;
+                    break;
+                case "CARLSBERGVIKAR":
+                    rtnVal = BookTypes.CARLSBERGVIKAR;
+                    break;
+                case "TXBOOK":
+                    rtnVal = BookTypes.TXBOOK;
+                    break;
+                case "BCBOOK":
+                    rtnVal = BookTypes.BCBOOK;
+                    break;
+                
+            }
+
+            return rtnVal;
+        }
+
+        LanguageList ConvertLanguageFromString(string language)
+        {
+            LanguageList rtnVal = LanguageList.DA;
+            switch (language)
+            {
+                case "EN":
+                    rtnVal = LanguageList.EN;
+                    break;
+            }
+
+            return rtnVal;
+        }
+
+        protected string GetClientIp(HttpRequestMessage request)
+        {
+            //try
+            //{
+                if (request.Properties.ContainsKey("MS_HttpContext"))
+                {
+                    return ((HttpContextWrapper)request.Properties["MS_HttpContext"]).Request.UserHostAddress;
+                }
+
+                else
+                {
+                    return "";
+                }
+            //}
+            //catch
+            //{
+            //    return "";
+            //}
+        }
+
+        protected NotFoundTextPlainActionResult NotFound(string message)
+        {
+            return new NotFoundTextPlainActionResult(message, Request);
+        }
+
+        protected NotFoundJSONActionResult Error(APIMethodControl message, HttpStatusCode status)
+        {
+            Log.LogError("ERROR:" + message.ErrorCode + " " + message.ErrorMessage);
+            return new NotFoundJSONActionResult(message, Request, status);
+        }
+    }
+
+   
+
+   
+   
+}

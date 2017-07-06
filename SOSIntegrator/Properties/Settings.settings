@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="SOSIntegrator.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Port7913" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">1074</Value>
+    </Setting>
+    <Setting Name="HealthMonTimer" Type="System.String" Scope="Application">
+      <Value Profile="(Default)"> 0 0/10 * * * ?</Value>
+    </Setting>
+    <Setting Name="ServiceQuartzTimer" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">0 0/1 * * * ?</Value>
+    </Setting>
+    <Setting Name="Ip7913" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">192.168.16.98</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

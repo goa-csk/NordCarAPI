@@ -1,0 +1,94 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NordCar.WebAPI", "NordCar.WebAPI\NordCar.WebAPI.csproj", "{BE04B6EB-C26D-4A22-94C9-7D02F3A83A57}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NordCar.WebAPI.Tests", "NordCar.WebAPI.Tests\NordCar.WebAPI.Tests.csproj", "{16A600B7-3EF1-492D-82B8-AAC29CE252DB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NordCar.Carla.Data", "NordCar.Carla.Data\NordCar.Carla.Data.csproj", "{4930A787-0E3B-4D7C-AC3E-C2998A596658}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NordCar.Carla.Data.Test", "NordCar.Carla.Data.Test\NordCar.Carla.Data.Test.csproj", "{CB589925-B20C-4151-8457-59EA72741963}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Service", "Service", "{22A36421-7456-46AF-8150-8437AC889A96}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternalServiceIISWASHost", "ExternalServiceIISWASHost\ExternalServiceIISWASHost.csproj", "{27527D50-D084-4AF9-8833-C8EF9019DDE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOSService", "SOSService\SOSService.csproj", "{C863726B-EFFC-4401-B7DB-2E1DD155FB52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nordcar.Carla.Data.EF", "..\Leasing\source\trunk\api\NordCar.Carla.Data.EF\Nordcar.Carla.Data.EF.csproj", "{B17B6953-DD74-45DD-9F06-45C045F7C567}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Contract", "Contract", "{B953AD41-5406-475E-95CB-C8248E2D52CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nordcar.Contract.Service.Exception", "Nordcar.Contract.Service.Exception\Nordcar.Contract.Service.Exception.csproj", "{4E34AD2F-17BA-4827-9B6E-4140D5B281E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOSIntegrator", "SOSIntegrator\SOSIntegrator.csproj", "{5A919974-5F96-42A3-9D74-78CC6A5C3CA1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{27527D50-D084-4AF9-8833-C8EF9019DDE9} = {27527D50-D084-4AF9-8833-C8EF9019DDE9}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTest", "UnitTest", "{5EFAE70F-2626-4F49-BA8E-0A5E45A66B23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOSServiceTests", "SOSServiceTests\SOSServiceTests.csproj", "{6658DE7A-2DC9-4F7C-B9C1-49B9EC08FA22}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BE04B6EB-C26D-4A22-94C9-7D02F3A83A57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE04B6EB-C26D-4A22-94C9-7D02F3A83A57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE04B6EB-C26D-4A22-94C9-7D02F3A83A57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE04B6EB-C26D-4A22-94C9-7D02F3A83A57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16A600B7-3EF1-492D-82B8-AAC29CE252DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16A600B7-3EF1-492D-82B8-AAC29CE252DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16A600B7-3EF1-492D-82B8-AAC29CE252DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16A600B7-3EF1-492D-82B8-AAC29CE252DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4930A787-0E3B-4D7C-AC3E-C2998A596658}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4930A787-0E3B-4D7C-AC3E-C2998A596658}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4930A787-0E3B-4D7C-AC3E-C2998A596658}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4930A787-0E3B-4D7C-AC3E-C2998A596658}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB589925-B20C-4151-8457-59EA72741963}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB589925-B20C-4151-8457-59EA72741963}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB589925-B20C-4151-8457-59EA72741963}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB589925-B20C-4151-8457-59EA72741963}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27527D50-D084-4AF9-8833-C8EF9019DDE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27527D50-D084-4AF9-8833-C8EF9019DDE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27527D50-D084-4AF9-8833-C8EF9019DDE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27527D50-D084-4AF9-8833-C8EF9019DDE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C863726B-EFFC-4401-B7DB-2E1DD155FB52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C863726B-EFFC-4401-B7DB-2E1DD155FB52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C863726B-EFFC-4401-B7DB-2E1DD155FB52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C863726B-EFFC-4401-B7DB-2E1DD155FB52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B17B6953-DD74-45DD-9F06-45C045F7C567}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B17B6953-DD74-45DD-9F06-45C045F7C567}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B17B6953-DD74-45DD-9F06-45C045F7C567}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B17B6953-DD74-45DD-9F06-45C045F7C567}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E34AD2F-17BA-4827-9B6E-4140D5B281E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E34AD2F-17BA-4827-9B6E-4140D5B281E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E34AD2F-17BA-4827-9B6E-4140D5B281E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E34AD2F-17BA-4827-9B6E-4140D5B281E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A919974-5F96-42A3-9D74-78CC6A5C3CA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A919974-5F96-42A3-9D74-78CC6A5C3CA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A919974-5F96-42A3-9D74-78CC6A5C3CA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A919974-5F96-42A3-9D74-78CC6A5C3CA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6658DE7A-2DC9-4F7C-B9C1-49B9EC08FA22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6658DE7A-2DC9-4F7C-B9C1-49B9EC08FA22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6658DE7A-2DC9-4F7C-B9C1-49B9EC08FA22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6658DE7A-2DC9-4F7C-B9C1-49B9EC08FA22}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{27527D50-D084-4AF9-8833-C8EF9019DDE9} = {22A36421-7456-46AF-8150-8437AC889A96}
+		{C863726B-EFFC-4401-B7DB-2E1DD155FB52} = {22A36421-7456-46AF-8150-8437AC889A96}
+		{4E34AD2F-17BA-4827-9B6E-4140D5B281E5} = {B953AD41-5406-475E-95CB-C8248E2D52CA}
+		{6658DE7A-2DC9-4F7C-B9C1-49B9EC08FA22} = {5EFAE70F-2626-4F49-BA8E-0A5E45A66B23}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.Common.6.0.1304.0\lib\NET45;packages\EnterpriseLibrary.Logging.6.0.1304.0\lib\NET45
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,482 @@
+﻿using AutoMapper;
+using NordCar.Carla.Data.Repository;
+using NordCar.WebAPI.BootStrapper;
+using NordCar.WebAPI.Models;
+using NordCar.WebAPI.Models.Promotion;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Web.Http;
+using System.Web.Http.Description;
+
+namespace NordCar.WebAPI.Controllers
+{
+    public class PromotionController : BaseAPIController
+    {
+         /// <summary>
+        /// Initialise a variable of IContactsManagerRepository from data layer
+        /// </summary>
+        protected readonly IECAPIManagerRepository ECAPIManagerRepository;
+        /// <summary>
+        /// Inject repository
+        /// </summary>
+        /// <param name="_repository">IPSAPIManagerRepository</param>
+        public PromotionController(IECAPIManagerRepository _repository)
+        {
+            if (_repository == null)
+            {
+                throw new ArgumentNullException("ECAPIManagerManager Repository exception");
+            }
+
+            this.ECAPIManagerRepository = _repository;
+
+            var bs = new Bootstrapper();
+            bs.Initialize();
+
+            Log.Info("PromotionController created");
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [ResponseType(typeof(NordCar.WebAPI.Models.Promotion.EnableAt))]
+        public IHttpActionResult GetEnableAt()
+        {
+            var ea = new List<EnableAt>();
+
+            foreach (string name in (Enum.GetNames(typeof(NordCar.Carla.Shared.Enums.EnablePromotion))))
+            {
+                ea.Add(new EnableAt() { Name = name });
+            }
+            return Ok(ea);
+        }
+
+        /// <summary>
+        /// GetPromotionCodeList
+        /// </summary>
+        /// <param name="bookType"></param>
+        /// <param name="countryId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [ResponseType(typeof(NordCar.WebAPI.Models.DiscountSheet.DiscountSheet))]
+        public IHttpActionResult GetDiscountSheetList(string bookType, string countryId = "")
+        {
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.GetDiscountSheetList, booktype);
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.GetDiscountSheetList(bs);
+
+            if (data.Item1.Succes)
+            {
+              
+                return Ok(Mapper.Map<List<NordCar.Carla.Data.Entities.DiscountSheet.DiscountSheet>, List<NordCar.WebAPI.Models.DiscountSheet.DiscountSheet>>(data.Item2));
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+
+        /// <summary>
+        /// GetDiscountSheet
+        /// </summary>
+        /// <param name="discountsheetid"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IHttpActionResult GetDiscountSheet(string discountsheetid)
+        {
+
+            Log.Info(string.Format("DiscountSheetId={0}", discountsheetid));
+
+            var bs1 = fillbasics(FunctionList.GetDiscountSheetXls, BookTypes.ECBOOK);
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+            //bs.OrgBookNr = resNo;
+
+            var data = this.ECAPIManagerRepository.GetDiscountSheetXls(bs, discountsheetid);
+
+            if (data.Item1.Succes)
+            {
+                IHttpActionResult response;
+                HttpResponseMessage result = new HttpResponseMessage(HttpStatusCode.OK);
+                result.Content = new ByteArrayContent(data.Item2);
+                result.Content.Headers.ContentType =
+                    new MediaTypeHeaderValue("application/octet-stream");
+                response = ResponseMessage(result);
+                return response;
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+        }
+
+        /// <summary>
+        /// GetPromotionCodeList
+        /// </summary>
+        /// <param name="bookType"></param>
+        /// <param name="countryId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [ResponseType(typeof(NordCar.WebAPI.Models.Promotion.Promotion))]
+        public IHttpActionResult GetPromotionCodeList(string bookType, string countryId = "")
+        {
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.GetPromotionCodeList, booktype);
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.GetPromotionCodeList(bs);
+
+            if (data.Item1.Succes)
+            {
+                // var result = new
+                //{
+                //promotions = Mapper.Map<List<NordCar.Carla.Data.Entities.Promotion.Promotion>, List<NordCar.WebAPI.Models.Promotion.Promotion>>(data.Item2)
+
+                //Status = "OK"
+                //};
+
+                return Ok(Mapper.Map<List<NordCar.Carla.Data.Entities.Promotion.Promotion>, List<NordCar.WebAPI.Models.Promotion.Promotion>>(data.Item2)
+        );
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bookType"></param>
+        /// <param name="countryId"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [ResponseType(typeof(NordCar.WebAPI.Models.Promotion.Promotion))]
+        public IHttpActionResult GetPromotion(string id, string bookType, string countryId = "")
+        {
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.GetPromotionCodeList, booktype);
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.GetPromotion(bs,id);
+
+            if (data.Item1.Succes)
+            {
+                // var result = new
+                //{
+                //promotions = Mapper.Map<List<NordCar.Carla.Data.Entities.Promotion.Promotion>, List<NordCar.WebAPI.Models.Promotion.Promotion>>(data.Item2)
+
+                //Status = "OK"
+                //};
+
+                return Ok(Mapper.Map<NordCar.Carla.Data.Entities.Promotion.Promotion, NordCar.WebAPI.Models.Promotion.Promotion>(data.Item2));
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        /// <summary>
+        /// AddPromotionCode
+        /// </summary>
+        /// <param name="promotion"></param>
+        /// <param name="bookType"></param>
+        /// <param name="countryId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IHttpActionResult AddPromotionCode(NordCar.WebAPI.Models.Promotion.PromotionAdd promotion, string bookType, string countryId = "")
+        {
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.AddPromotionCode, booktype);
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var input = Mapper.Map<NordCar.WebAPI.Models.Promotion.PromotionAdd, NordCar.Carla.Data.Entities.Promotion.PromotionAdd>(promotion);
+
+            var data = this.ECAPIManagerRepository.PromotionCodeAdd(bs, input);
+
+            if (data.Item1.Succes)
+            {
+                return Ok(data.Item2);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        /// <summary>
+        /// EditPromotionCode
+        /// </summary>
+        /// <param name="promotion"></param>
+        /// <param name="bookType"></param>
+        /// <param name="countryId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IHttpActionResult EditPromotionCode(NordCar.WebAPI.Models.Promotion.PromotionAdd promotion, string bookType, string countryId = "")
+        {
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.EditPromotionCode, booktype);
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var input = Mapper.Map<NordCar.WebAPI.Models.Promotion.PromotionAdd, NordCar.Carla.Data.Entities.Promotion.PromotionAdd>(promotion);
+
+            var data = this.ECAPIManagerRepository.PromotionCodeEdit(bs, input);
+
+            if (data.Item1.Succes)
+            {
+                return Ok(data.Item2);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+
+        /// <summary>
+        /// DeletePromotionCode
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="bookType"></param>
+        /// <param name="countryId"></param>
+        /// <returns></returns>
+
+        [HttpDelete]
+        public IHttpActionResult DeletePromotionCode(string id, string bookType, string countryId = "")
+        {
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.DeletePromotionCode, booktype);
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+          
+            var data = this.ECAPIManagerRepository.DeletePromotionCode(bs, id);
+
+            if (data.Item1.Succes)
+            {
+                return Ok(data.Item2);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+
+        /// <summary>
+        /// GetMicroSite
+        /// </summary>
+        /// <param name="bookType"></param>
+        /// <param name="countryId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [ResponseType(typeof(NordCar.WebAPI.Models.MicroSites.MicroSite))]
+        public IHttpActionResult GetMicroSiteList(string bookType, string countryId = "")
+        {
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.ListMicrosite, booktype);
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.GetMicroSiteList(bs);
+
+            if (data.Item1.Succes)
+            {
+                // var result = new
+                //{
+                //promotions = Mapper.Map<List<NordCar.Carla.Data.Entities.Promotion.Promotion>, List<NordCar.WebAPI.Models.Promotion.Promotion>>(data.Item2)
+
+                //Status = "OK"
+                //};
+
+                return Ok(Mapper.Map<List<NordCar.Carla.Data.Entities.MicroSite.MicroSite>, List<NordCar.WebAPI.Models.MicroSites.MicroSite>>(data.Item2)
+        );
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        /// <summary>
+        /// GetMicroSite
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="bookType"></param>
+        /// <param name="countryId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [ResponseType(typeof(NordCar.WebAPI.Models.MicroSites.MicroSite))]
+        public IHttpActionResult GetMicroSite(string id, string bookType, string countryId = "")
+        {
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.ListMicrosite, booktype);
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var data = this.ECAPIManagerRepository.GetMicroSiteList(bs);
+
+            if (data.Item1.Succes)
+            {
+                var site = data.Item2.FirstOrDefault(f => f.Id == id);
+
+                return Ok(Mapper.Map<NordCar.Carla.Data.Entities.MicroSite.MicroSite, NordCar.WebAPI.Models.MicroSites.MicroSite>(site));
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+        /// <summary>
+        /// AddMicroSite
+        /// </summary>
+        /// <param name="microsite"></param>
+        /// <param name="bookType"></param>
+        /// <param name="countryId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IHttpActionResult AddMicroSite(NordCar.WebAPI.Models.MicroSites.MicroSite microsite,string bookType, string countryId = "")
+        {
+
+            BookTypes booktype = NordCar.WebAPI.Models.Helper.ParseEnum(bookType);
+
+            if (booktype == 0)
+            {
+                return BookTypeNotFound(bookType);
+            }
+
+            var bs1 = fillbasics(FunctionList.AddMicrosite, booktype);
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var input = Mapper.Map<NordCar.WebAPI.Models.MicroSites.MicroSite, NordCar.Carla.Data.Entities.MicroSite.MicroSite>(microsite);
+
+            var data = this.ECAPIManagerRepository.AddMicroSite(bs, input);
+
+            if (data.Item1.Succes)
+            {
+               return Ok(data.Item2);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+            
+        }
+
+        /// <summary>
+        /// EditMicroSite
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="microsite"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public IHttpActionResult EditMicroSite(string id, NordCar.WebAPI.Models.MicroSites.MicroSite microsite)
+        {
+
+            BookTypes booktype = BookTypes.ECBOOK;
+
+            //if (booktype == 0)
+            //{
+            //    return BookTypeNotFound(booktype);
+            //}
+
+            var bs1 = fillbasics(FunctionList.EditMicrosite, booktype);
+
+            var bs = Mapper.Map<BasicStructure, NordCar.Carla.Data.Entities.BasicStructure>(bs1);
+
+            var input = Mapper.Map<NordCar.WebAPI.Models.MicroSites.MicroSite, NordCar.Carla.Data.Entities.MicroSite.MicroSite>(microsite);
+
+            var data = this.ECAPIManagerRepository.EditMicroSite(bs, input);
+
+            if (data.Item1.Succes)
+            {
+                return Ok(data.Item2);
+            }
+            else
+            {
+                return Error(Mapper.Map<NordCar.Carla.Data.Entities.APIMethodControl, APIMethodControl>(data.Item1), HttpStatusCode.NotFound);
+            }
+
+        }
+
+
+        private NotFoundJSONActionResult BookTypeNotFound(string bookType)
+        {
+            return Error(new APIMethodControl() { Succes = false, ErrorMessage = string.Format("Booktype {0} not found", bookType) }, HttpStatusCode.NotFound);
+        }
+
+        private NotFoundJSONActionResult BasicNotSet()
+        {
+            return Error(new APIMethodControl() { Succes = false, ErrorMessage = "Basic not set" }, HttpStatusCode.NotFound);
+        }
+    }
+}

@@ -1,0 +1,142 @@
+﻿using System;
+using System.CodeDom;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NordCar.Carla.Data.Entities.CustomerPrivate
+{
+    public enum CustomerStatus
+    {
+        Ok = 1,
+        SeriousLockout = 2,
+        LockoutAccounting = 3,
+        Dau = 4,
+        OkAgreementWithCredit = 7,
+        OkAgreementWithoutCredit= 8,
+        NoEmail = 9,
+        QuatationOut = 10,
+        AgreementAccepted = 11,
+        BankrobcyToBeDeleted = 12,
+        AgreementFailed = 13,
+        CardRequest = 14,
+        CardOrdered = 15,
+        CustomerWip = 16,
+        RememberDepartmentAndCity = 17,
+        AlwaysCdwNeverPai = 18,
+        NotInterested = 19,
+        LigtCustomerWip = 20
+
+    }
+
+
+    public class CustomerPrivateListItem
+    {
+        public string CustomerPrivateNumber { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+    }
+
+    public class CustomerCompanyListItem
+    {
+        public string CustomerCompanyNumber { get; set; }
+        public string CompanyName { get; set; }
+
+    }
+
+  
+    public class CustomerCompany
+    {
+        public string CustomerCompanyNumber { get; set; }
+
+        public string Type { get; set; }
+        public string Brand { get; set; }
+        public string CompanyName { get; set; }
+        public string AdressLine1 { get; set; }
+        public string AdressLine2 { get; set; }
+        public string AdressLine3 { get; set; }
+        public string City { get; set; }
+        public string ZipCode { get; set; }
+        public string Country { get; set; }
+        public string CompanyEmail { get; set; }
+        public string Phone { get; set; }
+        public string ContactName { get; set; }
+        public string ContactEmail { get; set; }
+        public string AgreementNumber { get; set; }
+        public string Comment { get; set; }
+        public CustomerStatus Status { get; set; }
+        public string CommentToStatus { get; set; }
+        public string ChangeTimeStamp { get; set; }
+        public string GW_ContractNumber { get; set; }
+        public string GW_ParentContractNumber { get; set; }
+        public string IATANumber { get; set; }
+        public string DebitorNumber { get; set; }
+        public string CVRNumber { get; set; }
+        public string EANNumber { get; set; }
+        public string Fax { get; set; }
+        public string AccountResponsableSuperiorId { get; set; }
+        public string AccountResponsableLocaleId { get; set; }
+        public string BillingAddress1 { get; set; }
+        public string BillingAddress2 { get; set; }
+        public string BillingZipcode { get; set; }
+        public string BillingCity { get; set; }
+        public string BillingCountry { get; set; }
+        public string BillingEmail { get; set; }
+        public string CRMId { get; set; }
+        public string DiscountTerms { get; set; }
+        public string DiscountPercentEmployment { get; set; }
+        public string DiscountPercentTransport { get; set; }
+        public string DiscountPercentMiscellaneous { get; set; }
+        public string Insurance { get; set; }
+        public string RequisitionNumberMandatory { get; set; }
+        public string FullCredit { get; set; }
+        public string AttentionName { get; set; }
+        public string AskNewsletter { get; set; }
+        public string Newsletter { get; set; }
+        public string Wintertires { get; set; }
+        public string Wt_StarDate { get; set; }
+        public string Wt_EndDate { get; set; }
+        public string Wt_PricePrDay { get; set; }
+        public string Wt_MaxPrice { get; set; }
+
+    }
+
+    public class CustomerPrivate
+    {
+        public string CustomerPrivateNumber { get; set; }
+        public string Brand { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string AdressLine1 { get; set; }
+        public string AdressLine2 { get; set; }
+        public string AdressLine3 { get; set; }
+        public string City { get; set; }
+        public string ZipCode { get; set; }
+        public string Country { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string DateOfBirth { get; set; }
+        public string DriverLicenseNumber { get; set; }
+        public string AgreementNumber { get; set; }
+        public string Comment { get; set; }
+        public CustomerStatus Status { get; set; }
+        public string CommentToStatus { get; set; }
+        /// <summary>
+        /// ChangeDate tells when Carla is making changes
+        /// </summary>
+        public string ChangeDate { get; set; }
+        public string CardType1 { get; set; }
+        public string CardType2 { get; set; }
+        public string CardType3 { get; set; }
+        public string CompanyReference { get; set; }
+        public string AskNewsletter { get; set; }
+        public string Newsletter { get; set; }
+        public string Wintertires { get; set; }
+        public string Wt_StarDate { get; set; }
+        public string Wt_EndDate { get; set; }
+        public string Wt_PricePrDay { get; set; }
+        public string Wt_MaxPrice { get; set; }
+
+    }
+}

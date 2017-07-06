@@ -1,0 +1,108 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace NordCar.Carla.Data.Entities
+{
+    /// <summary>
+    /// Function catalog 
+    /// </summary>
+    public enum FunctionList
+    {
+        Hello = 0,
+        GetCarsList = 1,
+        GetPriceList = 2,
+        GetAvailabillityList = 3,
+        SelectProduct = 4,
+        UpdatePrice = 5,
+        GetLocationList = 6,
+        Login = 7,
+        Account = 8,
+        ReturnCompanyCustomerId = 9,
+        SubmitRental = 10,
+        GetBookingList = 11,
+        CancelRental = 12,
+        EditRental = 13,
+        GetAddDefaults = 14,
+        GetFrontPageDefault = 15,
+        UpdateCompanyDrivers = 16,
+        DibsResult = 17,
+        GetInvalidPickupDates = 18,
+        GetInvalidReturnDates = 19,
+        GetOpenHours = 20,
+        PromotionUpdates = 21,
+        GetLocations = 24,
+        GetLocationDetails = 25,
+        GetCountries = 26,
+        GetAvailableCars = 27,
+        GetCarTypes = 28,
+        GetCarExtras = 29,
+        UpdatePrices = 30,
+        MakeReservation = 31,
+        SearchBooking = 32,
+        CancelBooking = 33,
+        GetPdfBooking = 34,
+        CreateAccount = 35,
+        ECLogin = 36,
+        ForgotPassword = 37,
+        ModifyAccount = 38,
+        GetCarSpecifications = 39,
+        SecretQuestions = 40,
+        PaymentCardTypes = 41,
+        FrequentTravelerPrograms = 42,
+        GetLocationDateExceptions = 43,
+        ECDibsResult = 44,
+        CheckPromotionCode = 45,
+        GetCarTypesByLocation = 46,
+        GetReservationText = 47,
+        GetDiscountSheetXls = 48,
+        GetDiscountSheetList = 49,
+        GetPromotionCodeList = 50,
+        AddPromotionCode = 51,
+        EditPromotionCode = 52,
+        DeletePromotionCode = 53,
+        AddMicrosite = 54,
+        EditMicrosite = 55,
+        ListMicrosite = 56,
+        GetReservationStatusQueue = 57,
+        ReservationStatusQueueMessageProcessed = 58,
+        GetResRAData = 59,
+        GetMicrositeSheetXls = 60,
+        GetBookTypes = 61,
+        GetPromotioUmbrellaList = 62,
+        GetCustomerCompanyNumbers = 63,
+        GetCustomerCompany = 64,
+        CreateCustomerCompany = 65,
+	    UpdateCustomerCompany = 66,
+        DeleteCustomerCompany = 67,
+        GetCustomerPrivateNumbers = 68,
+        GetCustomerPrivate = 69,
+        CreateCustomerPrivate = 70,
+        UpdateCustomerPrivate = 71,
+        DeleteCustomerPrivate = 72
+
+
+
+    }
+    public enum LanguageList
+    {
+        DA,
+        EN
+    }
+    public class BasicStructure
+    {
+        
+        public LanguageList Language { get; set; }
+        public string BookTypes { get; set; }
+        public string IPAddress { get; set; }
+        public string CompanyDealId { get; set; }
+        public string CustomerId { get; set; }
+        public string ExtraId { get; set; }
+        public string VoucherCode { get; set; }
+        public string OrgBookNr { get; set; }
+        public string StepNr { get; set; }
+    }
+
+   
+}

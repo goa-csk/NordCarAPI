@@ -1,0 +1,422 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Web;
+
+namespace SOSService.Data
+{
+    /// <summary>
+    /// Agreement
+    /// </summary>
+    [DataContract]
+    public class Agreement
+    {     
+        /// <summary>
+        /// Number 
+        /// </summary>
+        [DataMember]
+        public int number { get; set; }
+        
+        /// <summary>
+        /// Name
+        /// </summary>
+        [DataMember]
+        public string name { get;set; }
+
+    }
+
+    /// <summary>
+    /// Address
+    /// </summary>
+    [DataContract]
+    public class Address
+    {
+        /// <summary>
+        /// Street
+        /// </summary>
+        [DataMember]
+        public string Street { get; set; }
+
+        /// <summary>
+        /// City
+        /// </summary>
+        [DataMember]
+        public string City { get; set; }
+
+        /// <summary>
+        /// ZipCode
+        /// </summary>
+        [DataMember]
+        public string ZipCode { get; set; }
+
+        /// <summary>
+        /// Country
+        /// </summary>
+        [DataMember]
+        public string Country { get; set; }
+
+    }
+
+    /// <summary>
+    /// Rental
+    /// </summary>
+    [DataContract]
+    public class Rental
+    {
+        /// <summary>
+        /// Station out 
+        /// </summary>
+        [DataMember]
+        public int StationOutId { get; set; }
+
+        /// <summary>
+        /// Date out, UTC [dd-MM-yyyy]
+        /// </summary>
+        [DataMember]
+        public string DateOut { get; set; }
+
+        /// <summary>
+        /// Time out, UTC, [hh:mm]
+        /// </summary>
+        [DataMember]
+        public string TimeOut { get; set; }
+
+        /// <summary>
+        /// Date in [dd-MM-yyyy]
+        /// </summary>
+        [DataMember]
+        public string DateIn { get; set; }
+
+        /// <summary>
+        /// Time in  UTC, [hh:mm]
+        /// </summary>
+        [DataMember]
+        public string TimeIn { get; set; }
+
+        /// <summary>
+        /// Information to EC department
+        /// </summary>
+        [DataMember]
+        public string ECDepartmentInfo { get; set; }
+
+        /// <summary>
+        /// Information to SOS customer
+        /// </summary>
+        [DataMember]
+        public string SOSCustomerInfo { get; set; }
+
+        /// <summary>
+        /// Winter tires
+        /// </summary>
+        [DataMember]
+        public bool WinterTires { get; set; }
+
+        /// <summary>
+        /// Automatic
+        /// </summary>
+        [DataMember]
+        public bool AutomaticGear { get; set; }
+
+        /// <summary>
+        /// Towbar
+        /// </summary>
+        [DataMember]
+        public bool Towbar { get; set; }
+
+        /// <summary>
+        /// ChildSeat
+        /// </summary>
+        [DataMember]
+        public bool ChilSeat { get; set; }
+
+        /// <summary>
+        /// GPS
+        /// </summary>
+        [DataMember]
+        public bool GPS { get; set; }
+
+        /// <summary>
+        /// ExtraDriver
+        /// </summary>
+        [DataMember]
+        public bool ExtraDriver { get; set; }
+
+        /// <summary>
+        /// FuelDeposit
+        /// </summary>
+        [DataMember]
+        public bool FuelDeposit { get; set; }
+
+        /// <summary>
+        /// MaxGOP, credit limit
+        /// </summary>
+        [DataMember]
+        public int MaxGOP { get; set; }
+        
+        /// <summary>
+        /// GOP, currency
+        /// </summary>
+        [DataMember]
+        public string GOPCurrency { get; set; }
+        /// <summary>
+        /// Pick up
+        /// </summary>
+        [DataMember]
+        public bool Pickup{ get; set; }
+
+        /// <summary>
+        /// Pickup adress
+        /// </summary>
+        [DataMember]
+        public Address PickupAdress { get; set; }
+
+        /// <summary>
+        /// Delivery
+        /// </summary>
+        [DataMember]
+        public bool Delivery { get; set; }
+
+        /// <summary>
+        /// Delivery adress
+        /// </summary>
+        [DataMember]
+        public Address DeliveryAdress { get; set; }
+
+        /// <summary>
+        /// Car brand
+        /// </summary>
+        [DataMember]
+        public string CarBrand { get; set; }
+
+        /// <summary>
+        /// Car model
+        /// </summary>
+        [DataMember]
+        public string CarModel { get; set; }
+
+        /// <summary>
+        /// Correspond to EC Cargroup (maybe)
+        /// </summary>
+        [DataMember]
+        public string RentalCarGroup { get; set; }
+
+
+    }
+
+    /// <summary>
+    /// Driver
+    /// </summary>
+    [DataContract]
+    public class Driver
+    {
+        /// <summary>
+        /// Number 
+        /// </summary>
+        [DataMember]
+        public string Phone { get; set; }
+
+        /// <summary>
+        /// Name
+        /// </summary>
+        [DataMember]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Last name
+        /// </summary>
+        [DataMember]
+        public string LastName { get; set; }
+
+        /// <summary>
+        /// Adresss
+        /// </summary>
+        [DataMember]
+        public Address address { get; set; }
+
+    }
+
+    /// <summary>
+    /// Incomming reservation 
+    /// </summary>
+    [DataContract]
+    public class Reservation
+    {
+       
+        /// <summary>
+        /// AgreementId
+        /// </summary>
+        [DataMember]
+        public int AgreementId { get; set; }
+
+        /// <summary>
+        /// EC Reservation number,
+        /// blank new reservation
+        /// </summary>
+        [DataMember]
+        public string ECReservationNumer { get; set; }
+
+        /// <summary>
+        /// EC contract number,
+        /// blank new reservation
+        /// </summary>
+        [DataMember]
+        public string ECContractNumer { get; set; }
+
+        /// <summary>
+        /// External ref. number
+        /// </summary>
+        [DataMember]
+        public string CustomerReferenceNumber { get; set; }
+
+
+        /// <summary>
+        /// Driver
+        /// </summary>
+        [DataMember]
+        public Driver driver { get; set; }
+
+        /// <summary>
+        /// Rental
+        /// </summary>
+        [DataMember]
+        public Rental rental { get; set; }
+
+
+
+    }
+
+    [DataContract]
+    public class OpeningHours
+    {
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public string DayOfWeek { get; set; }
+        [DataMember]
+        public bool Open { get; set; }
+        [DataMember]
+        public string OpeningHour { get; set; }
+        [DataMember]
+        public string ClosingHour { get; set; }
+        [DataMember]
+        public bool ExtraCharges { get; set; }
+    }
+
+    /// <summary>
+    /// LocationDetail
+    /// </summary>
+    [DataContract]
+    public class LocationDetail
+    {
+        [DataMember]
+        public string Id { get; set; }
+        [DataMember]
+        public string LocationCode { get; set; }
+        [DataMember]
+        public string StationName { get; set; }
+        [DataMember]
+        public string Type { get; set; }
+        [DataMember]
+        public string Address { get; set; }
+        [DataMember]
+        public string ZipCode { get; set; }
+        [DataMember]
+        public string City { get; set; }
+        [DataMember]
+        public string Country { get; set; }
+        [DataMember]
+        public string Phone { get; set; }
+        [DataMember]
+        public string Email { get; set; }
+        [DataMember]
+        public string ForeignEmail { get; set; }
+        [DataMember]
+        public string Latitude { get; set; }
+        [DataMember]
+        public string Longitude { get; set; }
+        [DataMember]
+        public List<OpeningHours> OpeningHours { get; set; }
+        [DataMember]
+        public List<Exception> Exceptions { get; set; }
+
+    }
+
+    [DataContract]
+    public class Exception
+    {
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public string DayOfWeek { get; set; }
+        [DataMember]
+        public string OpeningHour { get; set; }
+        [DataMember]
+        public string ClosingHour { get; set; }
+        [DataMember]
+        public string Date { get; set; }
+        [DataMember]
+        public bool ExtraCharges { get; set; }
+    }
+
+    [DataContract]
+    public class Location
+    {
+        [DataMember]
+        public string Id { get; set; }
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public string Type { get; set; }
+        [DataMember]
+        public string Latitude { get; set; }
+        [DataMember]
+        public string Longitude { get; set; }
+    }
+
+    /// <summary>
+    /// A PBAValidationFault will occur when input data is not correct.
+    /// </summary>
+    [DataContract]
+    public class ECValidationFault
+    {
+        /// <summary>
+        /// Constructor which takes an error message.
+        /// </summary>
+        /// <param name="msg"></param>
+        public ECValidationFault(string msg)
+        {
+            this.ErrorMessage = msg;
+        }
+
+        /// <summary>
+        ///  A Error message.
+        /// </summary>
+        [DataMember]
+        public string ErrorMessage { get; set; }
+    }
+
+    /// <summary>
+    /// A PBAConfigurationFault will occur if the PBA system has been configured incorrectly.
+    /// </summary>
+    [DataContract]
+    public class ECConfigurationFault
+    {
+        /// <summary>
+        /// Constructor which takes an error message.
+        /// </summary>
+        /// <param name="msg"></param>
+        public ECConfigurationFault(string msg)
+        {
+            this.ErrorMessage = msg;
+        }
+
+        /// <summary>
+        ///  A Error message.
+        /// </summary>
+        [DataMember]
+        public string ErrorMessage { get; set; }
+    }
+  
+    
+}

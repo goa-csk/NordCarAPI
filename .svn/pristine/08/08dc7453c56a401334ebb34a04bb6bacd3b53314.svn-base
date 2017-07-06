@@ -1,0 +1,57 @@
+﻿//===============================================================================
+// Microsoft patterns & practices
+// Unity Application Block
+//===============================================================================
+// Copyright © Microsoft Corporation.  All rights reserved.
+// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY
+// OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT
+// LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+// FITNESS FOR A PARTICULAR PURPOSE.
+//===============================================================================
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.ServiceModel;
+using System.ServiceModel.Activation;
+using System.Text;
+using System.Threading.Tasks;
+//using CalculatorEngines;
+using Microsoft.Practices.Unity;
+using NordCar.Carla.Data.EF.Repository;
+using NordCar.Carla.Data.Repository;
+using NordCar.Carla.Data.Implementation;
+using log4net;
+using UnityLog4NetExtension.Log4Net;
+using log4net.Config;
+
+namespace SOSService
+{
+  class UnityServiceHostFactory : ServiceHostFactory
+  {
+    private readonly IUnityContainer container;
+
+    public UnityServiceHostFactory()
+    {
+      container = new UnityContainer();
+      RegisterTypes(container);
+    }
+
+    protected override ServiceHost CreateServiceHost(Type serviceType,
+        Uri[] baseAddresses)
+    {
+      return new UnityServiceHost(this.container, serviceType, baseAddresses);
+    }
+
+    private void RegisterTypes(IUnityContainer container)
+    {
+      container.RegisterType<ICustomerAgreement, CustomerAgreementRepo>();
+      container.RegisterType<IECAPIManagerRepository, ECAPIManagerRepository>(new ContainerControlledLifetimeManager(), new InjectionConstructor(System.Configuration.ConfigurationManager.AppSettings["CarlaIP"], int.Parse(System.Configuration.ConfigurationManager.AppSettings["CarlaPort"]), ""));
+      container.AddNewExtension<Log4NetExtension>();
+      //Read configuration from web.config file
+      XmlConfigurator.Configure();
+   
+
+    }
+  }
+}

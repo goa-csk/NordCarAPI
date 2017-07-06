@@ -1,0 +1,160 @@
+﻿using NordCar.WebAPI.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+using System.Web.Http;
+using System.Web.Http.ExceptionHandling;
+
+
+namespace NordCar.WebAPI.Messages
+{
+    public class MyExceptionHandler : ExceptionHandler
+    {
+        public override void Handle(ExceptionHandlerContext context)
+        {
+            //TODO: Do what you need to do
+            context.Result = new TextPlainErrorResult
+            {
+                Request = context.ExceptionContext.Request,
+                Content = "Oops! Sorry! Something went wrong." +
+                          "Please contact support@contoso.com so we can try to fix it."
+            };
+            base.Handle(context);
+        }
+
+        private class TextPlainErrorResult : IHttpActionResult
+        {
+            public HttpRequestMessage Request { get; set; }
+
+            public string Content { get; set; }
+
+            public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                HttpResponseMessage response =
+                                 new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                response.Content = new StringContent(Content);
+                response.RequestMessage = Request;
+                return Task.FromResult(response);
+            }
+        }
+
+        public class NotFoundTextPlainActionResult : IHttpActionResult
+        {
+            public string Message { get; private set; }
+
+            public HttpRequestMessage Request { get; private set; }
+
+            //Constructor
+            public NotFoundTextPlainActionResult(string message, HttpRequestMessage request)
+            {
+                if (message == null)
+                {
+                    throw new ArgumentNullException("message");
+                }
+
+                if (request == null)
+                {
+                    throw new ArgumentNullException("request");
+                }
+
+                Message = message;
+                Request = request;
+            }
+
+
+            public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                return Task.FromResult(Execute());
+            }
+
+            public HttpResponseMessage Execute()
+            {
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.NotFound);
+                response.Content = new StringContent(Message); // Put the message in the response body (text/plain content).
+                response.RequestMessage = Request;
+                return response;
+            }
+        }
+
+        public class NotFoundJSONActionResult : IHttpActionResult
+        {
+            public APIMethodControl Message { get; private set; }
+
+            public HttpRequestMessage Request { get; private set; }
+
+            public HttpStatusCode StatusCode { get; private set; }
+
+            //Constructor
+            public NotFoundJSONActionResult(APIMethodControl message, HttpRequestMessage request, HttpStatusCode status)
+            {
+                if (message == null)
+                {
+                    throw new ArgumentNullException("message");
+                }
+
+                if (request == null)
+                {
+                    throw new ArgumentNullException("request");
+                }
+
+                //if (status == null)
+                //{
+                //    throw new ArgumentNullException("status");
+                //}
+
+
+                Message = message;
+                Request = request;
+                StatusCode = status;
+            }
+
+
+            public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                return Task.FromResult(Execute());
+            }
+
+            public HttpResponseMessage Execute()
+            {
+                //http://forums.asp.net/t/1844684.aspx?Web+api+method+return+json+in+string
+                HttpResponseMessage response = new HttpResponseMessage(StatusCode);
+                string err = "[{\"ErrorCode\":\"" + Message.ErrorCode + "\"},{\"ErrorMessage\":\"" + Message.ErrorMessage + "\"}]";
+                response.Content = new StringContent(err); // Put the message in the response body (text/plain content).
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                response.RequestMessage = Request;
+                return response;
+            }
+        }
+
+    }
+
+    //public class OopsExceptionHandler : ExceptionHandler
+    //{
+    //    public override void HandleCore(ExceptionHandlerContext context)
+    //    {
+
+    //    }
+
+    //    private class TextPlainErrorResult : IHttpActionResult
+    //    {
+    //        public HttpRequestMessage Request { get; set; }
+
+    //        public string Content { get; set; }
+
+    //        public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
+    //        {
+    //            HttpResponseMessage response =
+    //                             new HttpResponseMessage(HttpStatusCode.InternalServerError);
+    //            response.Content = new StringContent(Content);
+    //            response.RequestMessage = Request;
+    //            return Task.FromResult(response);
+    //        }
+    //    }
+    //}
+}

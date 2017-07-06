@@ -1,0 +1,1834 @@
+﻿using NordCar.Carla.Data.Entities;
+using NordCar.Carla.Data.Entities.EC;
+using NordCar.Carla.Data.Infrastructure;
+using NordCar.Carla.Data.Repository;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NordCar.Carla.Data.Implementation
+{
+    public class ECAPIManagerRepository : IECAPIManagerRepository
+    {
+        const string errorstring = "err";
+
+        private string ip7913;
+        private int port7913;
+        private string _logfile;
+
+        public ECAPIManagerRepository(string ip, int port, string logfile)
+        {
+            ip7913 = ip;
+            port7913 = port;
+            _logfile = logfile;
+        }
+
+        public Tuple<APIMethodControl, string> GetVersion(BasicStructure basic)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+               
+                var apc = new APIMethodControl();
+
+                string ret = "";
+
+                string[] temp =  new string[1] {((int)basic.FunctionId).ToString()};
+
+                var str = Helpers.EncodeString(temp);
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    ret = keys[0] + " - " + keys[2];
+                  
+                    
+
+
+                }
+
+                return Tuple.Create(apc, ret);
+            }
+        }
+
+        #region 17 DibsResult
+        public Tuple<APIMethodControl, DibsResultItem> DibsResult(BasicStructure basic, int bookingId, int paymentFlag, int paymentType, int paymentCode, int paymentAmount, int depositPaymentCode, int depositPaymentAmount)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var apc = new APIMethodControl();
+
+                var dibres = new DibsResultItem();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(bookingId.ToString());
+                temp.Add(paymentFlag.ToString());
+                temp.Add(paymentType.ToString());
+                temp.Add(paymentCode.ToString());
+                temp.Add(paymentAmount.ToString());
+                temp.Add(depositPaymentCode.ToString());
+                temp.Add(depositPaymentAmount.ToString());
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    dibres.Result = keys[0];
+                    dibres.OptionalTxt = keys[1];
+                }
+
+                return Tuple.Create(apc, dibres);
+            }
+        }
+        #endregion
+       
+        #region 24 GetLocations
+        public Tuple<APIMethodControl, List<NordCar.Carla.Data.Entities.EC.Location>> GetLocations(BasicStructure basic)
+        {
+
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var mylocations = new List<NordCar.Carla.Data.Entities.EC.Location>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+             
+                    for (var i = 0; i < keys.Length; i += 5)
+                    {
+                        Debug.WriteLine(string.Format("i={0},loc={1}", i, keys[i]));
+                        string _locationId = keys[i];
+                        string _name = keys[i + 1];
+                        string _type = keys[i + 2];
+                        string _lat = keys[i + 3];
+                        string _long = keys[i + 4];
+
+                        mylocations.Add(new NordCar.Carla.Data.Entities.EC.Location() { Id = _locationId, Name = _name, Type = _type, Latitude = _lat, Longitude = _long });
+
+                    }
+
+                    
+                }
+                
+                return Tuple.Create(apc, mylocations);
+            }
+        }
+        #endregion
+
+        #region 25 GetLocationDetails
+        public Tuple<APIMethodControl, Entities.EC.LocationDetail> GetLocationDetails(BasicStructure basic, string id, DateTime StartDate, int PeriodLengthInDays)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var mylocationDetails = new NordCar.Carla.Data.Entities.EC.LocationDetail();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(id);
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString2(text);
+
+                if (keys[0].Data[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[0].Data[1];
+                    apc.ErrorMessage = keys[0].Data[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    foreach (ReceivedLine rl in keys)
+                    {
+                       var openhours = new List<NordCar.Carla.Data.Entities.EC.OpeningHours>();
+
+                    //for (var i = 0; i < keys.Length; i += 13)
+                    //{
+                     //   Debug.WriteLine(string.Format("i={0},loc={1}", i, keys[i]));
+                       string _locationId = rl.Data[0];
+                       string _stationName = rl.Data[1];
+                       string _type = rl.Data[2];
+                       string _address = rl.Data[3];
+                       string _zipCode = rl.Data[4];
+                       string _city = rl.Data[5];
+                       string _country = rl.Data[6];
+                       string _phone = rl.Data[7];
+                       string _email = rl.Data[8];
+                       string _code = rl.Data[9];
+                       string _lat = rl.Data[10];
+                       string _long = rl.Data[11];
+
+                        for (int i = rl.ListInLIstIndex; i < rl.Data.Length; i += 6)
+                        {
+                            string _name = rl.Data[i];
+                            string _open = rl.Data[i + 1];
+                            string _opentime = rl.Data[i + 2];
+                            string _closetime = rl.Data[i + 3];
+                            string _dayNumber = rl.Data[i + 4];
+                            string _extraCharges = rl.Data[i + 5];
+
+                            openhours.Add(new NordCar.Carla.Data.Entities.EC.OpeningHours { Name = _name, Open = Helpers.ConvertStringToBool2(_open), OpeningHour = _opentime, ClosingHour = _closetime, DayOfWeek = _dayNumber, ExtraCharges = Helpers.ConvertStringToBool(_extraCharges) });
+                        }
+
+
+                        mylocationDetails = new NordCar.Carla.Data.Entities.EC.LocationDetail() { Id = _locationId, LocationCode = _code, Type = _type, Address = _address, ZipCode = _zipCode, Country = _country, Email = _email, Phone = _phone, StationName = _stationName, City = _city, Latitude = _lat, Longitude = _long, OpeningHours = openhours };
+
+                    }
+
+                    basic.FunctionId = FunctionList.GetLocationDateExceptions;
+                    var g = GetLocationDateExceptions(basic, id, StartDate, PeriodLengthInDays);
+                    mylocationDetails.Exceptions = g.Item2;
+
+                }
+
+                return Tuple.Create(apc, mylocationDetails);
+            }
+        }
+        #endregion
+
+        #region 26 GetCountries
+        public Tuple<APIMethodControl, List<Entities.EC.Country>> GetCountries(BasicStructure basic)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var mycountries = new List<NordCar.Carla.Data.Entities.EC.Country>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+
+                    for (var i = 0; i < keys.Length; i += 2)
+                    {
+                        Debug.WriteLine(string.Format("i={0},loc={1}", i, keys[i]));
+                        string _shortCountry = keys[i];
+                        string _countryName = keys[i + 1];
+
+                        mycountries.Add(new NordCar.Carla.Data.Entities.EC.Country() { Id = _shortCountry, Name = _countryName });
+
+                    }
+
+
+                }
+
+                return Tuple.Create(apc, mycountries);
+            }
+        }
+        #endregion
+
+        #region 27 GetAvailableCars
+        /// <summary>
+        /// GetAvailableCars
+        /// </summary>
+        /// <param name="basic"></param>
+        /// <param name="input"></param>
+        /// <returns>CarDetail</returns>
+        public Tuple<APIMethodControl, List<Entities.EC.CarDetail>> GetAvailableCars(BasicStructure basic, Entities.EC.PickDropInfo input, string age)
+        {
+            /*Carla
+             * INPUT
+             * OUTPUT
+             * 
+             */
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var mycarDetails = new List<NordCar.Carla.Data.Entities.EC.CarDetail>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(input.CountryId);
+                temp.Add(input.PickUp.LocationId);
+                temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(input.PickUp.Date));
+                temp.Add(input.PickUp.Time);
+                temp.Add(input.DropOff.LocationId);
+                temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(input.DropOff.Date));
+                temp.Add(input.DropOff.Time);
+                temp.Add(input.CarTypeId);
+                temp.Add(input.CarGroupId);
+                temp.Add(age);
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                //var keys = Helpers.DecodeString(text);
+                var keys = Helpers.DecodeString2(text);
+
+                if (keys[0].Data[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[0].Data[1];
+                    apc.ErrorMessage = keys[0].Data[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    foreach (ReceivedLine rl in keys)
+                    {
+
+                        var options = new List<NordCar.Carla.Data.Entities.EC.Option>();
+                        
+                        string _carId = rl.Data[0];
+                        string _size= rl.Data[1];
+                        string _Typeid = rl.Data[2];
+                        string _image = rl.Data[3];
+                        string _price = rl.Data[4];
+                        string _campaignPrice = rl.Data[5];
+                        string _pickupLocation = rl.Data[6];
+                        string _pickupLocationName = rl.Data[7];
+                        string _pickupDate = rl.Data[8];
+                        string _pickupTime = rl.Data[9];
+                        string _dropoffLocation = rl.Data[10];
+                        string _dropoffLocationName = rl.Data[11];
+                        string _dropoffDate = rl.Data[12];
+                        string _dropoffTime = rl.Data[13];
+                        string _acrissCode = rl.Data[14];
+                        string _productcode = rl.Data[15];
+                        string _productname = rl.Data[16];
+                        string _cargroup = rl.Data[17];
+                        string _bookStatus = rl.Data[18];
+                        string _bookStatusTekst = rl.Data[19];
+
+
+
+                        string _TeaserText = rl.Data[20];
+                        string _ProductInfo = rl.Data[21];
+                        string _Duration = rl.Data[22];
+                        string _PriceperDay = rl.Data[23];
+                        string _ConfirmationLocationEmail = rl.Data[24];
+
+                        string _RentalPrice  = rl.Data[25];
+                        string _YoungDriverFee  = rl.Data[26];
+                        string _AirportFee = rl.Data[27];
+
+
+                        
+                        var pickup = new NordCar.Carla.Data.Entities.EC.Trip() { LocationId = _pickupLocation, LocationName = _pickupLocationName, Date = Helpers.ConvertCarlaDateStringToNovicellDateString(_pickupDate), Time = Helpers.ConvertCarlaTimeStringToNovicellTimeString(_pickupTime) };
+                        var dropoff = new NordCar.Carla.Data.Entities.EC.Trip() { LocationId = _dropoffLocation, LocationName = _dropoffLocationName, Date = Helpers.ConvertCarlaDateStringToNovicellDateString(_dropoffDate), Time = Helpers.ConvertCarlaTimeStringToNovicellTimeString(_dropoffTime) };
+
+
+
+                        for (int i = rl.ListInLIstIndex; i < rl.Data.Length; i += 4)
+                        {
+                            string _text = rl.Data[i];
+                            string _value = rl.Data[i + 1];
+                            string _icon = rl.Data[i + 2];
+                            string _optionId = rl.Data[i + 3];
+
+                            options.Add(new NordCar.Carla.Data.Entities.EC.Option { Icon = _icon, Text = _text, Value = _value, FeatureId = _optionId });
+
+                        }
+
+                        mycarDetails.Add(new NordCar.Carla.Data.Entities.EC.CarDetail()
+                        {
+                            //CarId = _carId, //Not used anymore
+                            Size = _size,
+                            TypeId = _Typeid,
+                            Image = _image,
+                            Price = _price,
+                            CampaignPrice = _campaignPrice,
+                            AcrissCode = _acrissCode,
+                            ProductId = _productcode,
+                            ProductName = _productname,
+                            CarGroupId = _cargroup,
+                            bookStatus = int.Parse(_bookStatus),
+                            bookStatusTekst = _bookStatusTekst,
+
+                            TeaserText = _TeaserText,
+                            ProductInfo = _ProductInfo,
+                            Duration = _Duration,
+                            PriceperDay = _PriceperDay,
+                            ConfirmationLocationEmail = _ConfirmationLocationEmail,
+                            RentalPrice = _RentalPrice,
+                            YoungDriverFee = _YoungDriverFee,
+                            AirportFee = _AirportFee,
+
+                            Features = options,
+                            PickUp = pickup,
+                            DropOff = dropoff
+                        });
+
+
+                    }
+
+
+                }
+
+                return Tuple.Create(apc, mycarDetails);
+            }
+        }
+        #endregion
+
+        #region 28 GetCarTypes
+
+        public Tuple<APIMethodControl, List<Entities.EC.CarType>> GetCarTypes(BasicStructure basic)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var mycartypes = new List<NordCar.Carla.Data.Entities.EC.CarType>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+
+                    for (var i = 0; i < keys.Length; i += 2)
+                    {
+                        Debug.WriteLine(string.Format("i={0},loc={1}", i, keys[i]));
+                        string _id = keys[i];
+                        string _name = keys[i + 1];
+
+                        mycartypes.Add(new NordCar.Carla.Data.Entities.EC.CarType() { Id = _id, Name = _name });
+
+                    }
+
+
+                }
+
+                return Tuple.Create(apc, mycartypes);
+            }
+        }
+
+        #endregion
+
+        #region 29 GetCarExtras
+        public Tuple<APIMethodControl, Entities.EC.CarExtra> GetCarExtras(BasicStructure basic, NordCar.Carla.Data.Entities.EC.PickDropInfo input, string productId, string age)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var mycarextra = new NordCar.Carla.Data.Entities.EC.CarExtra();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(input.CountryId);
+                temp.Add(input.PickUp.LocationId);
+                temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(input.PickUp.Date));
+                temp.Add(input.PickUp.Time);
+                temp.Add(input.DropOff.LocationId);
+                temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(input.DropOff.Date));
+                temp.Add(input.DropOff.Time);
+                temp.Add(input.CarTypeId);
+                temp.Add(productId);
+                temp.Add(input.CarGroupId);
+                temp.Add(age);
+                    
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+           var keys = Helpers.DecodeString2(text);
+
+           if (keys[0].Data[0].ToLower() == errorstring)
+           {
+               apc.Succes = false;
+               apc.ErrorCode = keys[0].Data[1];
+               apc.ErrorMessage = keys[0].Data[2];
+           }
+           else
+           {
+               apc.Succes = true;
+               foreach (ReceivedLine line in keys)
+               {
+                   mycarextra.BookingStatus = line.Data[0];
+                   mycarextra.BookingStatusTxt = line.Data[1];
+
+                   mycarextra.TeaserText = line.Data[2];
+                   mycarextra.ProductInfo = line.Data[3];
+                   mycarextra.Duration = line.Data[4];
+                   mycarextra.PriceperDay = line.Data[5];
+                   mycarextra.ConfirmationLocationEmail = line.Data[6];
+
+                   int Mileagepos = Array.IndexOf(line.Data, "Mileage");
+                   int Insurancepos = Array.IndexOf(line.Data, "Insurance");
+                   int Recommendedpos = Array.IndexOf(line.Data, "RecommendedExtras");
+
+                
+
+                   mycarextra.Milage = ControlArray(line.Data.Skip(Mileagepos).ToArray());
+
+                   mycarextra.Insurance = ControlArray(line.Data.Skip(Insurancepos).Take(Mileagepos - Insurancepos).ToArray()); ;
+
+
+                   mycarextra.RecommendedExtras = ControlArray(line.Data.Take(Insurancepos).ToArray());
+
+                  
+               }
+           }
+            
+             return Tuple.Create(apc, mycarextra);
+           }
+        }
+        #endregion 
+
+        #region 30 UpdatePrice
+
+        public Tuple<APIMethodControl,Entities.EC.PriceCalculated> UpdatePrice(BasicStructure basic, Entities.EC.PricePart input, string age)
+        {
+
+            /*************************************************************************************
+            * Parameters for Carla (30 UpdatePrice)
+            * ----------------------------------------------------------------------------------
+            * INPUT
+            * ----------------------------------------------------------------------------------
+            * + [Basic Parameters]
+            * + Country
+            * + FromLocationId
+            * + FromLocationDate
+            * + FromLocationTime
+            * + ToLocationId
+            * + ToLocationDate
+            * + ToLocationTime
+            * + CarTypeId 
+            * + SelectedProduct
+            * + CarGroupId
+            * + "RecommendedExtras" 
+            * +  Id    //Sequence    
+            * +  Value //
+            * + "Insurance"
+            * +  Id    //Sequence    
+            * +  Value //
+            * + "Mileage"
+            * +  Id    //Sequence    
+            * +  Value //
+             */
+
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+
+
+                var apc = new APIMethodControl();
+                var pricecalc = new Entities.EC.PriceCalculated();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(input.PickDropInfo.CountryId);
+                temp.Add(input.PickDropInfo.PickUp.LocationId);
+                temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(input.PickDropInfo.PickUp.Date));
+                temp.Add(input.PickDropInfo.PickUp.Time);
+                temp.Add(input.PickDropInfo.DropOff.LocationId);
+                temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(input.PickDropInfo.DropOff.Date));
+                temp.Add(input.PickDropInfo.DropOff.Time);
+                temp.Add(input.PickDropInfo.CarTypeId);
+                temp.Add(input.ProductId);
+                temp.Add(input.PickDropInfo.CarGroupId);
+                temp.Add(age);
+            
+                temp.Add("RecommendedExtras");
+
+                foreach (NordCar.Carla.Data.Entities.EC.SelectedBase ep in input.Extra.RecommendedExtras)
+                {
+                    temp.Add(ep.Id.ToString());
+                    temp.Add(ep.NumbUnit.ToString());
+
+                }
+
+                temp.Add("Insurance");
+
+                foreach (NordCar.Carla.Data.Entities.EC.SelectedBase ep in input.Extra.Insurance)
+                {
+                    temp.Add(ep.Id.ToString());
+                    temp.Add(ep.NumbUnit.ToString());
+
+                }
+
+                temp.Add("Mileage");
+
+                foreach (NordCar.Carla.Data.Entities.EC.SelectedBase ep in input.Extra.Mileage)
+                {
+                    temp.Add(ep.Id.ToString());
+                    temp.Add(ep.NumbUnit.ToString());
+
+                }
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    string _total = keys[0];
+                    string _depositOnline = keys[1];
+                    string _depositCash = keys[2];
+                    string _depositCreditcard = keys[3];
+                    string _totalDepositOnline = keys[4];
+                    string _totalDepositCash = keys[5];
+                    string _totalDepositCreditcard = keys[6];
+                    string _totalExtraPrice = keys[7];
+                    string _totalExclusiveTotalExtraPrice = keys[8];
+
+
+                    int _BookStatus = Helpers.StringEmptyToInt(keys[9]);
+                    string _BookStatusTekst = keys[10];
+
+                    string _TeaserText = keys[11];
+                    string _ProductInfo = keys[12];
+                    string _Duration = keys[13];
+                    string _PriceperDay = keys[14];
+                    string _ConfirmationLocationEmail = keys[15];
+                    string _RentalPrice = keys[16];
+                    string _YoungDriverFee = keys[17];
+                    string _AirportFee = keys[18];
+
+                    string _AcceptDepositOnline = keys[19];
+                    string _AcceptDepositCash  = keys[20];
+                    string _AcceptDepositCreditCard  = keys[21];
+                    string _AcceptDepositNonestring = keys[22];
+                    string _AcceptDepositNoneText = keys[23];
+
+                    pricecalc.Total = _total;
+                    pricecalc.DepositOnline = _depositOnline;
+                    pricecalc.DepositCash = _depositCash;
+                    pricecalc.DepositCreditCard = _depositCreditcard;
+                    pricecalc.TotalDepositOnline = _totalDepositOnline;
+                    pricecalc.TotalDepositCash = _totalDepositCash;
+                    pricecalc.TotalDepositCreditCard = _totalDepositCreditcard;
+                    pricecalc.TotalExtraPrice = _totalExtraPrice;
+                    pricecalc.TotalExclusiveTotalExtraPrice = _totalExclusiveTotalExtraPrice;
+                    pricecalc.RentalPrice = _RentalPrice;
+                    pricecalc.YoungDriverFee = _YoungDriverFee;
+                    pricecalc.AirportFee = _AirportFee;
+
+                    pricecalc.BookStatus = _BookStatus;
+                    pricecalc.BookStatusTekst = _BookStatusTekst;
+
+                    pricecalc.TeaserText = _TeaserText;
+                    pricecalc.ProductInfo = _ProductInfo;
+                    pricecalc.Duration = _Duration;
+                    pricecalc.PriceperDay = _PriceperDay;
+                    pricecalc.ConfirmationLocationEmail = _ConfirmationLocationEmail;
+
+                    pricecalc.AcceptDepositOnline = _AcceptDepositOnline;
+                    pricecalc.AcceptDepositCash = _AcceptDepositCash;
+                    pricecalc.AcceptDepositCreditCard = _AcceptDepositCreditCard;
+                    pricecalc.AcceptDepositNonestring = _AcceptDepositNonestring;
+                    pricecalc.AcceptDepositNoneText = _AcceptDepositNoneText;
+                    
+                }
+
+                return Tuple.Create(apc, pricecalc);
+            }
+       }
+
+       #endregion
+
+        #region 31 MakeReservation
+       /// <summary>
+       /// 31 MakeReservation
+       /// </summary>
+       /// <param name="basic"></param>
+       /// <param name="input"></param>
+       /// <returns></returns>
+       public Tuple<APIMethodControl, RentalInfo> MakeReservation(BasicStructure basic, Entities.EC.Reservation input)
+       {
+           /*************************************************************************************
+            * Parameters for Carla (31 MakeReservation)
+            * ----------------------------------------------------------------------------------
+            * INPUT
+            * ----------------------------------------------------------------------------------
+            * + [Basic Parameters]
+            * + Country
+            * + FromLocationId
+            * + FromLocationDate
+            * + FromLocationTime
+            * + ToLocationId
+            * + ToLocationDate
+            * + ToLocationTime
+            * + CarTypeId 
+            * + SelectedProduct
+            * + CarGroupId
+            * + Title
+            * + Gender
+            * + FirstName
+            * + LastName
+            * + BirthDay (dd-mm-yyyy)
+            * + Address
+            * + Address2
+            * + Address3
+            * + City
+            * + ZipCode
+            * + Country
+            * + Email
+            * + PaymentType
+            * + BookStatus
+            * + FlightNo
+            * + Remarks
+            * + PhoneNumber
+            * + "RecommendedExtras" 
+            * +  Id    //Sequence    
+            * +  Value //
+            * + "Insurance"
+            * +  Id    //Sequence    
+            * +  Value //
+            * + "Mileage"
+            * +  Id    //Sequence    
+            * +  Value //
+            * ---------------------------------------------------------------------------------
+            * OUTPUT
+            * ---------------------------------------------------------------------------------
+           *************************************************************************************/
+
+           using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                
+
+                var apc = new APIMethodControl();
+                var info = new RentalInfo();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(input.PickDropInfo.CountryId);
+                temp.Add(input.PickDropInfo.PickUp.LocationId);
+                temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(input.PickDropInfo.PickUp.Date));
+                temp.Add(input.PickDropInfo.PickUp.Time);
+                temp.Add(input.PickDropInfo.DropOff.LocationId);
+                temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(input.PickDropInfo.DropOff.Date));
+                temp.Add(input.PickDropInfo.DropOff.Time);
+                temp.Add(input.PickDropInfo.CarTypeId);
+                temp.Add(input.ProductId);
+                temp.Add(input.PickDropInfo.CarGroupId); 
+                temp.Add(input.Title);
+                temp.Add(input.Gender);
+                temp.Add(input.FirstName);
+                temp.Add(input.LastName);
+                temp.Add(input.BirthDay);
+                temp.Add(input.Address);
+                temp.Add(input.Address2);
+                temp.Add(input.Address3);
+                temp.Add(input.City);
+                temp.Add(input.PostCode);
+                temp.Add(input.Country);
+                temp.Add(input.Email);
+                temp.Add(input.paymentType); //1=Online,2=kontant ved fremmøde(depositum=2000),3=kort ved fremmøde(depositum=3000)
+                temp.Add(input.BookStatus.ToString());
+                temp.Add(input.FlightNo);
+                temp.Add(input.Remarks);
+                temp.Add(input.PhoneNumber);
+
+                temp.Add("RecommendedExtras");
+                if (input.Extra != null)
+                {
+                    foreach (NordCar.Carla.Data.Entities.EC.SelectedBase ep in input.Extra.RecommendedExtras)
+                    {
+                        temp.Add(ep.Id.ToString());
+                        temp.Add(ep.NumbUnit.ToString());
+
+                    }
+                }
+                temp.Add("Insurance");
+                if (input.Extra != null)
+                {
+                    foreach (NordCar.Carla.Data.Entities.EC.SelectedBase ep in input.Extra.Insurance)
+                    {
+                        temp.Add(ep.Id.ToString());
+                        temp.Add(ep.NumbUnit.ToString());
+
+                    }
+                }
+                temp.Add("Mileage");
+                if (input.Extra != null)
+                {
+                    foreach (NordCar.Carla.Data.Entities.EC.SelectedBase ep in input.Extra.Mileage)
+                    {
+                        temp.Add(ep.Id.ToString());
+                        temp.Add(ep.NumbUnit.ToString());
+
+                    }
+                }
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    info.ReservationNo = keys[0];
+                    info.TotalPrice = keys[1];
+                    info.DepositOnline = keys[2];
+                    info.DepositPickupCash = keys[3];
+                    info.DepositPickupCard = keys[4];
+                    info.RentPlusDepositOnline = keys[5];
+                    info.RentPlusDepositPickupCash = keys[6];
+                    info.RentPlusDepositPickupCard = keys[7];
+                    info.AddOnsTotalPrice = keys[8];
+                    info.TotalPriceExclAddOnsTotalPrice = keys[9];
+                }
+
+                return Tuple.Create(apc, info);
+            }
+        }
+        #endregion
+
+        #region 32 SearchBooking
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="basic"></param>
+        /// <param name="reservationNo"></param>
+        /// <param name="email"></param>
+        /// <param name="pickupDate"></param>
+        /// <param name="lastName"></param>
+        /// <returns></returns>
+       public Tuple<APIMethodControl, List<NordCar.Carla.Data.Entities.EC.Booking>> SearchBooking(BasicStructure basic, string reservationNo, string email, string pickupDate, string lastName)
+        {
+            /*-------------------------------------------
+             * OUTPUT
+             * ------------------------------------------
+             * 0 ReservationNo
+             * 1 CarGroup
+             * 2 FromLocationId
+             * 3 FromLocationName
+             * 4 FromDate
+             * 5 FromTime
+             * 6 ToLocationId
+             * 7 ToLocationName
+             * 8 ToDate
+             * 9 ToTime
+             */
+
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+             {
+                 List<NordCar.Carla.Data.Entities.EC.Booking> _reservationNumbers = new List<NordCar.Carla.Data.Entities.EC.Booking>();  
+                
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(BookingSearchType(reservationNo, email, Helpers.ConvertNovicellDateStringToCarlaDateString(pickupDate), lastName));
+                temp.Add(reservationNo);
+                temp.Add(email);
+                if (pickupDate != "")
+                    temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(pickupDate));
+                else
+                    temp.Add(pickupDate);
+              
+                temp.Add(lastName);
+             
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString2(text);
+
+                if (keys[0].Data[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[0].Data[1];
+                    apc.ErrorMessage = keys[0].Data[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    foreach (ReceivedLine line in keys)
+                    {
+                        var pickup = new NordCar.Carla.Data.Entities.EC.Trip() { LocationId = line.Data[2], LocationName = line.Data[3], Date = Helpers.ConvertCarlaDateStringToNovicellDateString(line.Data[4]), Time = Helpers.ConvertCarlaTimeStringToNovicellTimeString(line.Data[5]) };
+                        var dropoff = new NordCar.Carla.Data.Entities.EC.Trip() { LocationId = line.Data[6], LocationName = line.Data[4], Date = Helpers.ConvertCarlaDateStringToNovicellDateString(line.Data[8]), Time = Helpers.ConvertCarlaTimeStringToNovicellTimeString(line.Data[9]) };
+                        var pickdropinfo = new NordCar.Carla.Data.Entities.EC.PickDropInfo() { CarGroupId = line.Data[1], PickUp = pickup, DropOff = dropoff, CarTypeId = "", CountryId="" };
+                        var newBooking = new NordCar.Carla.Data.Entities.EC.Booking() { ReservationNumber = line.Data[0], pickdropinfo = pickdropinfo };
+                        
+                        
+
+                        _reservationNumbers.Add(newBooking);
+                    }
+                }
+
+                return Tuple.Create(apc, _reservationNumbers);
+            }
+        }
+
+      
+        
+        #endregion
+
+        #region 33 CancelBooking
+        public Tuple<APIMethodControl, bool> CancelBooking(BasicStructure basic, string reservationNo)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+
+                var apc = new APIMethodControl();
+                bool res = false;
+
+                var temp = FillBasic(basic);
+
+                temp.Add(reservationNo.ToString());
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if ((keys.Length > 1) && (keys[0] != string.Empty))
+                {
+
+                    res = keys[0] == "1" ? true : false;
+
+                    if (keys[0].ToLower() == errorstring)
+                    {
+                        apc.Succes = false;
+                        apc.ErrorCode = keys[1];
+                        apc.ErrorMessage = keys[2];
+                    }
+                    else
+                    {
+                        apc.Succes = true;
+                    }
+                }
+
+                return Tuple.Create(apc, res);
+
+            }
+        }
+        #endregion
+
+        #region 34 GetPdfBooking
+        public Tuple<APIMethodControl, byte[]> GetPdfBooking(BasicStructure basic, int pdfType, string reservationNo, string email)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var promotioninfos = new List<PromotionInfo>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+//                temp.Add(pdfType.ToString());
+                temp.Add(reservationNo);
+  //              if (email.Length > 0)
+   //                 temp.Add(email);
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text1 = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text1);
+
+                Byte[] byteArr = null;
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    byteArr = Convert.FromBase64String(Helpers.ConvertStringArrayToString(keys));
+                }
+                return Tuple.Create(apc, byteArr);
+            }
+
+        }
+        #endregion
+
+        #region 35 CreateAccount
+        /// <summary>
+        /// 35 CreateAccount
+        /// </summary>
+        /// <param name="basic"></param>
+        /// <param name="account"></param>
+        /// <returns></returns>
+        public Tuple<APIMethodControl, NordCar.Carla.Data.Entities.EC.CustomerAccount> CreateAccount(BasicStructure basic, NordCar.Carla.Data.Entities.EC.Account account)
+        {
+            /*************************************************************************************
+             * Parameters for Carla (35 CreateAccount)
+             * ----------------------------------------------------------------------------------
+             * INPUT
+             * ----------------------------------------------------------------------------------
+             * + [Basic Parameters]
+             * + AccountType
+             * + Title
+             * + Gender
+             * + FirstName
+             * + LastName
+             * + Address
+             * + Address2
+             * + Address3
+             * + City
+             * + ZipCode
+             * + Country
+             * + Email
+             * + Phone
+             * + Password
+             * + Driver_BirthDay
+             * + Driver_BirthCity
+             * + Driver_BirthCountry
+             * + Driver_LicenseNumber
+             * + Driver_IssueDate
+             * + Driver_ExpiryDate
+             * + Driver_IssueCountry
+             * + Identification_IdentityNumber
+             * + Identification_PassPortNumber
+             * + Identification_IssueDate
+             * + Identification_ExpiryDate
+             * + Identification_IssueCountry
+             * + FrequentTravelerProgram_Id
+             * + FrequentTravelerProgram_CardNumber
+             * + FrequentTravelerProgramExpiryDate
+             * ---------------------------------------------------------------------------------
+             * OUTPUT
+             * ---------------------------------------------------------------------------------
+            *************************************************************************************/
+
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+
+
+                var apc = new APIMethodControl();
+                var customeraccount = new NordCar.Carla.Data.Entities.EC.CustomerAccount();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(account.AccountType);
+                temp.Add(account.Title);
+                temp.Add(account.Gender);
+                temp.Add(account.FirstName);
+                temp.Add(account.LastName);
+                temp.Add(account.Address);
+                temp.Add(account.Address2);
+                temp.Add(account.Address3);
+                temp.Add(account.City);
+                temp.Add(account.PostCode);
+                temp.Add(account.Country);
+                temp.Add(account.Email);
+                temp.Add(account.Phone);
+                temp.Add(account.Password);
+
+                if (account.Driver != null)
+                {
+                    temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(account.Driver.BirthDay));
+                    temp.Add(account.Driver.BirthCity);
+                    temp.Add(account.Driver.BirthCountry);
+                    temp.Add(account.Driver.LicenseNumber);
+                    temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(account.Driver.IssueDate));
+                    temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(account.Driver.ExpiryDate));
+                    temp.Add(account.Driver.IssueCountry);
+                }
+                else
+                {
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                }
+
+                if (account.Identification != null)
+                {
+                    temp.Add(account.Identification.IdentityNumber);
+                    temp.Add(account.Identification.PassPortNumber);
+                    temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(account.Identification.IssueDate));
+                    temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(account.Identification.ExpiryDate));
+                    temp.Add(account.Identification.IssueCountry);
+                }
+                else
+                {
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                }
+
+
+                temp.Add(account.FrequentTravelerProgram.Id);
+                temp.Add(account.FrequentTravelerProgram.CardNumber); 
+                temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(account.FrequentTravelerProgram.ExpiryDate));
+                temp.Add(account.SecretQuestionId);
+                temp.Add(account.SecretQuestionAnswer);
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    customeraccount.CustomerNo = keys[2];
+                }
+
+                return Tuple.Create(apc, customeraccount);
+            }
+        }
+        #endregion
+        
+        #region 36 Login
+
+        public Tuple<APIMethodControl, NordCar.Carla.Data.Entities.EC.CustomerAccount> Login(BasicStructure basic, string loginType, string userId, string password)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+
+
+                var apc = new APIMethodControl();
+                var ca = new NordCar.Carla.Data.Entities.EC.CustomerAccount();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(loginType);
+                temp.Add(userId);
+                temp.Add(password);
+             
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    var driver = new NordCar.Carla.Data.Entities.EC.Driver { LicenseNumber = keys[11], BirthDay = keys[12], BirthCity = keys[14], BirthCountry = keys[15], IssueDate = keys[16], ExpiryDate = keys[17], IssueCountry=keys[18] };
+                    var identification = new NordCar.Carla.Data.Entities.EC.Identification { IdentityNumber = keys[19], PassPortNumber = keys[20], IssueDate = keys[21], ExpiryDate = keys[22], IssueCountry = keys[23] };
+                    
+                    apc.Succes = true;
+                    ca.CustomerNo = keys[0];
+                    ca.FirstName = keys[1];
+                    ca.LastName = keys[2];
+                    ca.Address = keys[3];
+                    ca.Address2 = keys[4];
+                    ca.Address3 = keys[5];
+                    ca.City = keys[6];
+                    ca.PostCode = keys[7];
+                    ca.Country = keys[8];
+                    ca.Phone = keys[9];
+                    ca.Email = keys[10];
+                    ca.AccountType = keys[13];
+                    ca.Title = keys.Count() > 24 ? keys[24] : ""; // Mail from novicell 17-08-2015
+                    ca.Gender = keys.Count() > 25 ? keys[25] : ""; // Mail from novicell 17-08-2015
+                    ca.SecretQuestionId = keys.Count() > 26 ? keys[26] : ""; // Mail from novicell 17-08-2015
+                    ca.Driver = driver;
+                    ca.Identification = identification; 
+
+                }
+
+                return Tuple.Create(apc, ca);
+            }
+        }
+        #endregion
+        
+        #region 37 ForgotPassword
+
+        public Tuple<APIMethodControl, string> ForgotPassword(BasicStructure basic, string loginType, string userId)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+
+
+                var apc = new APIMethodControl();
+                string _password = "";
+
+                var temp = FillBasic(basic);
+
+                temp.Add(loginType);
+                temp.Add(userId);
+                
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    _password = keys[1];
+                }
+
+                return Tuple.Create(apc, _password);
+            }
+        }
+
+        #endregion
+
+        #region 38 ModifyAccount
+
+        public Tuple<APIMethodControl, Entities.EC.CustomerAccount> ModifyAccount(BasicStructure basic, Entities.EC.CustomerAccount account)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+
+
+                var apc = new APIMethodControl();
+                var customeraccount = new NordCar.Carla.Data.Entities.EC.CustomerAccount();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(account.AccountType);
+                temp.Add(account.Title);
+                temp.Add(account.Gender);
+                temp.Add(account.FirstName);
+                temp.Add(account.LastName);
+                temp.Add(account.Address);
+                temp.Add(account.Address2);
+                temp.Add(account.Address3);
+                temp.Add(account.City);
+                temp.Add(account.PostCode);
+                temp.Add(account.Country);
+                temp.Add(account.Email);
+                temp.Add(account.Phone);
+                temp.Add(account.Password);
+
+                if (account.Driver != null)
+                {
+                    temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(account.Driver.BirthDay));
+                    temp.Add(account.Driver.BirthCity);
+                    temp.Add(account.Driver.BirthCountry);
+                    temp.Add(account.Driver.LicenseNumber);
+                    temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(account.Driver.IssueDate));
+                    temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(account.Driver.ExpiryDate));
+                    temp.Add(account.Driver.IssueCountry);
+                }
+                else
+                {
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                }
+
+                if (account.Identification != null)
+                {
+                    temp.Add(account.Identification.IdentityNumber);
+                    temp.Add(account.Identification.PassPortNumber);
+                    temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(account.Identification.IssueDate));
+                    temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(account.Identification.ExpiryDate));
+                    temp.Add(account.Identification.IssueCountry);
+                }
+                else
+                {
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                    temp.Add("");
+                }
+
+                temp.Add(account.FrequentTravelerProgram.Id);
+                temp.Add(account.FrequentTravelerProgram.CardNumber);
+                temp.Add(Helpers.ConvertNovicellDateStringToCarlaDateString(account.FrequentTravelerProgram.ExpiryDate));
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    //Sender kan customerNo retur andre felter er tomme.
+                    customeraccount.CustomerNo = keys[2];
+                }
+
+                return Tuple.Create(apc, customeraccount);
+            }
+
+        }
+        #endregion
+
+        #region 39 GetCarSpecifications
+        public Tuple<APIMethodControl, List<NordCar.Carla.Data.Entities.EC.CarSpec>> GetCarSpecifications(BasicStructure basic, string countryId, string cartype, string carGroup)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var mycarDetails = new List<NordCar.Carla.Data.Entities.EC.CarSpec>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(cartype);
+                temp.Add(carGroup);
+                temp.Add(countryId);
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                //var keys = Helpers.DecodeString(text);
+                var keys = Helpers.DecodeString2(text);
+
+                if (keys[0].Data[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[0].Data[1];
+                    apc.ErrorMessage = keys[0].Data[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    foreach (ReceivedLine rl in keys)
+                    {
+
+                   
+                        string _carId = rl.Data[0];
+                        //string _name = rl.Data[1];
+                        string _size = rl.Data[1];
+                        string _acriss = rl.Data[2];
+
+                        mycarDetails.Add(new NordCar.Carla.Data.Entities.EC.CarSpec()
+                        {
+                            CarTypeId = _carId,
+                            CarGroup = _size,
+                            AcrissCode = _acriss,  
+                            Features =  CarOptions(rl),
+                           
+                        });
+
+
+                    }
+
+
+                }
+
+                    return Tuple.Create(apc, mycarDetails);
+                }
+            
+              
+        }
+
+      
+        #endregion
+
+        #region 40,41,42 DropDownLists
+
+
+        public Tuple<APIMethodControl, List<Entities.EC.DropDownListItem>> DropDownLists(BasicStructure basic)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var mylist = new List<NordCar.Carla.Data.Entities.EC.DropDownListItem>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+
+                    for (var i = 0; i < keys.Length; i += 2)
+                    {
+                        Debug.WriteLine(string.Format("i={0},loc={1}", i, keys[i]));
+                        string _id = keys[i];
+                        string _name = keys[i + 1];
+
+                        mylist.Add(new NordCar.Carla.Data.Entities.EC.DropDownListItem() { Id = _id, Name = _name });
+
+                    }
+
+
+                }
+
+                return Tuple.Create(apc, mylist);
+            }
+        }
+        #endregion
+
+        #region 43 GetLocationDateExceptions
+        public Tuple<APIMethodControl, List<Entities.EC.Exception>> GetLocationDateExceptions(BasicStructure basic, string LocationId, DateTime StartDate, int PeriodLengthInDays)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var ex= new List<NordCar.Carla.Data.Entities.EC.Exception>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(LocationId);
+                temp.Add(StartDate.ToString("ddMMyyyy"));
+                temp.Add(PeriodLengthInDays.ToString());
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+                
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+             
+                    for (var i = 0; i < keys.Length; i += 6)
+                    {
+
+                     
+                            string _dayNumber = keys[i];
+                            string _name = keys[i+1];
+                            string _opentime = keys[i+2];
+                            string _closetime = keys[i+3];
+                            string _date = keys[i+4];
+                            string _extraCharges = keys[i+5];
+
+                            ex.Add(new NordCar.Carla.Data.Entities.EC.Exception {  Date = Helpers.ConvertCarlaDateStringToNovicellDateString(_date), Name = _name, OpeningHour = Helpers.ConvertCarlaTimeStringToNovicellTimeString(_opentime), ClosingHour = Helpers.ConvertCarlaTimeStringToNovicellTimeString(_closetime), DayOfWeek = _dayNumber, ExtraCharges = Helpers.ConvertStringToBool(_extraCharges) });
+                        }
+
+
+                 
+                 
+
+                }
+
+                return Tuple.Create(apc, ex);
+            }
+        }
+        #endregion
+
+        #region 45 CheckPromotionCode
+        public Tuple<APIMethodControl, string> CheckPromotionCode(BasicStructure basic)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                string restxt = "";
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    restxt = keys[0].ToString();
+                
+
+
+
+
+                }
+
+                return Tuple.Create(apc, restxt);
+            }
+        }
+        #endregion
+
+        #region Private Methods
+        /// <summary>
+        /// FillBasic
+        /// </summary>
+        /// <param name="basic"></param>
+        /// <returns></returns>
+        private List<string> FillBasic(BasicStructure basic)
+        {
+            var temp = (int)basic.FunctionId;
+            return new List<string> {
+                temp.ToString()
+                ,basic.Language.ToString()
+                ,basic.BookTypes.ToString()
+                ,basic.IPAddress
+                ,basic.CompanyDealId
+                ,basic.CustomerId
+                ,basic.ExtraId
+                ,basic.VoucherCode
+                ,basic.OrgBookNr
+                ,basic.StepNr
+               
+            };
+        }
+
+        /// <summary>
+        /// CarOptions
+        /// </summary>
+        /// <param name="rl"></param>
+        /// <returns></returns>
+        private List<Entities.EC.Option> CarOptions(ReceivedLine rl)
+        {
+            var options = new List<NordCar.Carla.Data.Entities.EC.Option>();
+
+           
+   
+
+            for (int i = rl.ListInLIstIndex; i < rl.Data.Length; i += 3)
+            {
+                if (i != 0)
+                {
+                    string _text = rl.Data[i+1];
+                    string _value = rl.Data[i + 2];
+                    string _optionId = rl.Data[i];
+                    string _icon = "";
+                    options.Add(new NordCar.Carla.Data.Entities.EC.Option { FeatureId = _optionId, Text = _text, Value = _value, Icon = _icon });
+
+                }
+
+            }
+
+            return options;
+        }
+
+        /// <summary>
+        /// ControlArray
+        /// </summary>
+        /// <param name="Data"></param>
+        /// <returns></returns>
+        private List<object> ControlArray(string[] Data)
+        {
+            const string TestTeaserText = "50KarakterXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+            var bcs = new List<object>();
+            //Read from behind
+            for (int i = Data.Length - 1; i > 0; i--)
+            {
+
+
+
+
+                if (Data[i].ToUpper() == "CHECKBOX")
+                {
+                    //7 strings
+                    var chkbox = new Checkbox() { ProductId = Data[i - 8], Description = Data[i - 7], Enabled = Helpers.ConvertStringToBool(Data[i - 1]), Price = Data[i - 4], TypeName = "CHECKBOX", TeaserTxt = Data[i-6] };
+                    bcs.Add(chkbox);
+                    //Recalc
+                    i = i - 8;
+                }
+
+                if (Data[i].ToUpper() == "DROPDOWN")
+                {
+                    //7 strings
+                    var dropdown = new DropDown() { ProductId = Data[i - 8], Description = Data[i - 7], Enabled = (Data[i - 3] == "Kilometer(ikke muligt)" ? true : false), SelectedValue = int.Parse(Data[i - 3]), Min = int.Parse(Data[i - 2]), Max = int.Parse(Data[i - 1]), Price = Data[i - 4], TypeName = "DROPDOWN", TeaserTxt = Data[i-6] };
+                    bcs.Add(dropdown);
+                    //Recalc
+                    i = i - 8;
+                }
+                //Bruges ikke af website
+                if (Data[i].ToUpper() == "DROPDOWNEXTRA")
+                {
+                    var ddlitem = new DropDownList() { TypeName = "DROPDOWNEXTRA", TeaserTxt = TestTeaserText };
+                    var ddllist = new List<ddlItem>();
+                    int res = 0;
+
+                    do
+                    {
+                        int.TryParse(Data[i - 5], out res);
+                        var dditem0 = new ddlItem() { ElementId = Data[i - 3], ElementText = Data[i - 2], ElementPrice = Data[i - 1] };
+                        ddllist.Add(dditem0);
+                        i = i - 3;
+
+                    } while (res <= 0);
+
+                    ddlitem.ddlItems = ddllist;
+                    ddlitem.SelectedElement = Data[i - 1];
+                    ddlitem.NoOfElements = int.Parse(Data[i - 2]);
+
+                    ddlitem.Description = Data[i - 3];
+                    ddlitem.ProductId = Data[i - 4];
+
+
+                    bcs.Add(ddlitem);
+                }
+            }
+            return bcs;
+
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reservationNo"></param>
+        /// <param name="email"></param>
+        /// <param name="pickupDate"></param>
+        /// <param name="lastName"></param>
+        /// <returns></returns>
+        private string BookingSearchType(string reservationNo, string email, string pickupDate, string lastName)
+        {
+            string returnVal = "-1";
+
+            if (reservationNo.Trim() != "" && email.Trim() == "" && pickupDate.Trim() == "" && lastName.Trim() == "")
+                returnVal = "0";
+
+            if (reservationNo.Trim() != "" && email.Trim() != "")
+                returnVal = "1";
+
+            if (pickupDate.Trim() != "" && email.Trim() != "")
+                returnVal = "2";
+
+            if (reservationNo.Trim() != "" && lastName.Trim() != "")
+                returnVal = "3";
+
+            if (reservationNo.Trim() == "" && email.Trim() == "" && pickupDate.Trim() == "" && lastName.Trim() == "")
+                returnVal = "4";
+
+            return returnVal;
+        }
+
+        #endregion
+
+        public Tuple<APIMethodControl, List<Entities.EC.CarTypeLocationDetails>> GetCarTypesByLocation(BasicStructure basic, string LocationId, string Country)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+
+                string lastLocId = "";
+ 
+                var mycartypes = new List<NordCar.Carla.Data.Entities.EC.CarTypeLocationDetails>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(LocationId);
+                temp.Add(Country);
+            
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+
+                    for (var i = 0; i < keys.Length; i += 3)
+                    {
+                        var item = new NordCar.Carla.Data.Entities.EC.CarType() {Id = keys[i+1], Name = keys[i + 2]};
+
+                        if (lastLocId != keys[i])
+                        {
+
+
+                            var masteritem = new NordCar.Carla.Data.Entities.EC.CarTypeLocationDetails() { LocationId = keys[i], CarTypes = new List<Entities.EC.CarType>() { item } };
+                            mycartypes.Add(masteritem);
+                            lastLocId = keys[i];
+
+                        }
+                        else
+                        {
+                            foreach (NordCar.Carla.Data.Entities.EC.CarTypeLocationDetails b in mycartypes)
+                            {
+                                if (b.LocationId == keys[i])
+                                {
+                                    b.CarTypes.Add(item);
+                                }
+                            }
+
+                        }
+                        
+                      
+                    }
+
+
+                }
+
+                return Tuple.Create(apc, mycartypes);
+            }
+        }
+
+
+        public Tuple<APIMethodControl, ReservationText> GetReservationText(BasicStructure basic, string reservationNo)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                
+                var apc = new APIMethodControl();
+                var txts = new ReservationText();
+
+                var temp = FillBasic(basic);
+                temp.Add(reservationNo);
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys.Length > 0)
+                {
+                    if (keys[0].ToLower() == errorstring)
+                    {
+                        apc.Succes = false;
+                        apc.ErrorCode = keys[1];
+                        apc.ErrorMessage = keys[2];
+                    }
+                    else
+                    {
+                        apc.Succes = true;
+
+
+                        txts.CustomerSectionTxt = keys[0];
+                        txts.LocationSectionTxt = keys[1];
+                        txts.BillingSectionTxt = keys[2];
+                        txts.TermsSectionTxt = keys[3];
+                        txts.FooterSectionTxt = keys[4];
+
+                    }
+                }
+                else 
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = "";
+                    apc.ErrorMessage = "Funktionen findes ikke!";
+                
+                }
+
+            
+                return Tuple.Create(apc, txts);
+            }
+        }
+    }
+}

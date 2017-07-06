@@ -1,0 +1,37 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using NordCar.Carla.Data.Entities.CustomerPrivate;
+
+namespace NordCar.Carla.Data.Test.Cris
+{
+    public class CustomerPrivateTestFactory
+    {
+        public static CustomerPrivate ECCreateCustomer()
+        {
+            return new CustomerPrivate()
+            {
+                Brand = "ECBOOK",
+                FirstName = "Tonny",
+                LastName = "Rasmussen",
+                AdressLine1 = "Vagtmestergade 22",
+                AdressLine2 =  "",
+                AdressLine3 = "",
+                City = "Bogense",
+                ZipCode = "5400",
+                Phone = "+4523567719",
+                Email = "tonnyrasmussen@gmail.com",
+                AgreementNumber = "",
+                Status = "",
+                Country = "Danmark",
+                Comment = "Denne oprettelse kommer fra Cris!",
+                CommentToStatus = "Ikke sat",
+                DateOfBirth = "07-04-1991",
+                DriverLicenseNumber = "12345687654"
+
+            };
+        }
+    }
+}

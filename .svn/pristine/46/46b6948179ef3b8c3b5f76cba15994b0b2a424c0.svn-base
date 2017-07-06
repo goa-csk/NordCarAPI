@@ -1,0 +1,800 @@
+﻿using NordCar.Carla.Data.Entities;
+using NordCar.Carla.Data.Infrastructure;
+using NordCar.Carla.Data.Repository;
+using NordCar.Carla.Data.Test;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+
+namespace NordCar.Carla.Data.Implementation
+{
+    /// <summary>
+    /// PS
+    /// </summary>
+    public class PSAPIManagerRepository : IPSAPIManagerRepository
+    {
+        const string errorstring = "err";
+
+        private string ip7913;
+        private int port7913;
+        private string _logfile;
+
+        public PSAPIManagerRepository(string ip, int port, string logfile)
+        {
+            ip7913 =  ip;
+            port7913 = port;
+            _logfile = logfile;
+        }
+
+        private List<string> FillBasic(BasicStructure basic)
+        {
+            var temp = (int)basic.FunctionId;
+            return new List<string> {
+                temp.ToString()
+                ,basic.Language.ToString()
+                ,basic.BookTypes.ToString()
+                ,basic.IPAddress
+                ,basic.CompanyDealId
+                ,basic.CustomerId
+                ,basic.ExtraId
+                ,basic.VoucherCode
+                ,basic.OrgBookNr
+                ,basic.StepNr
+               
+            };
+        }
+
+        #region 01 GetCarlist
+        /// <summary>
+        /// Function 01 GetCarsList
+        /// </summary>
+        /// <param name="basic"></param>
+        /// <param name="LocationId"></param>
+        /// <returns></returns>
+        public Tuple<APIMethodControl, List<CarListItem>> GetCarsList(BasicStructure basic, int LocationId)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var carListItems = new List<CarListItem>();
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(LocationId.ToString());
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if ((keys.Length > 1) && (keys[0] != string.Empty))
+                {
+                    for (var i = 0; i < keys.Length; i += 18)
+                    {
+                        Debug.WriteLine(string.Format("i={0},loc={1}", i, keys[i]));
+                        string _locationId = keys[i];
+                        string _BilTypeKode = keys[i + 1];
+                        string _BilTypeNavn = keys[i + 2];
+                        string _BilGruppe = keys[i + 3];
+                        string _BilGruppeNavn = keys[i + 4];
+                        string _Evt_extra_beskr = keys[i + 5];
+                        string _Evt_extra_beskr2 = keys[i + 6];
+                        string _Kolonne1opl = keys[i + 7];
+                        string _Kolonne2opl = keys[i + 8];
+                        string _Kolonne3opl = keys[i + 9];
+                        string _Kolonne4opl = keys[i + 10];
+                        string _Kolonne5opl = keys[i + 11];
+                        string _Kolonne6opl = keys[i + 12];
+                        string _Kolonne7opl = keys[i + 13];
+                        string _Kolonne8opl = keys[i + 14];
+                        string _Kolonne9opl = keys[i + 15];
+                        string _Kolonne10extra = keys[i + 16];
+                        string _Kolonne11bilmodel = keys[i + 17];
+
+
+                        carListItems.Add(new CarListItem()
+                        {
+                            Stationnr = _locationId
+                            ,
+                            BilTypeKode = _BilTypeKode
+                            ,
+                            BilTypeNavn = _BilTypeNavn
+                            ,
+                            BilGruppe = _BilGruppeNavn
+                            ,
+                            BilGruppeNavn = _BilGruppeNavn
+                            ,
+                            Evt_extra_beskr = _Evt_extra_beskr
+                            ,
+                            Evt_extra_beskr2 = _Evt_extra_beskr2
+                            ,
+                            Kolonne1opl = _Kolonne1opl
+                            ,
+                            Kolonne2opl = _Kolonne2opl
+                            ,
+                            Kolonne3opl = _Kolonne3opl
+                            ,
+                            Kolonne4opl = _Kolonne4opl
+                            ,
+                            Kolonne5opl = _Kolonne5opl
+                            ,
+                            Kolonne6opl = _Kolonne6opl
+                            ,
+                            Kolonne7opl = _Kolonne7opl
+                            ,
+                            Kolonne8opl = _Kolonne8opl
+                            ,
+                            Kolonne9opl = _Kolonne9opl
+                            ,
+                            Kolonne10extra = _Kolonne10extra
+                            ,
+                            Kolonne11bilmodel = _Kolonne11bilmodel
+
+                        });
+                    }
+                }
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                }
+
+                return Tuple.Create(apc, carListItems);
+            }
+        }
+        #endregion
+
+        #region 02 GetPriceList
+        /// <summary>
+        /// Function 02 GetPriceList
+        /// </summary>
+        /// <param name="basic"></param>
+        /// <param name="LocationId"></param>
+        /// <param name="CategoryId"></param>
+        /// <param name="Extra"></param>
+        /// <returns></returns>
+        public Tuple<APIMethodControl, List<PriceListItem>> GetPriceList(BasicStructure basic, int locationId, string categoryId)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var priceListItems = new List<PriceListItem>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(locationId.ToString());
+                temp.Add(categoryId.ToString());
+
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString2(text);
+
+                if (keys[0].Data[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[0].Data[1];
+                    apc.ErrorMessage = keys[0].Data[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    foreach (ReceivedLine rl in keys)
+                    {
+
+                        var ppi = new List<PriceProductItem>();
+
+                        string _locationId = rl.Data[0];
+                        string _carType = rl.Data[1];
+                        string _carGroup = rl.Data[2];
+                        string _carGroupFileRef = rl.Data[3];
+                        string _carGroupspecialTopText = rl.Data[4];
+
+                        for (int i = rl.ListInLIstIndex; i < rl.Data.Length; i += 5)
+                        {
+                            string _code = rl.Data[i];
+                            string _text = rl.Data[i + 1];
+                            string _price = rl.Data[i + 2];
+                            string _extrakmpris = rl.Data[i + 3];
+                            string _evttekst = rl.Data[i + 4];
+
+                            ppi.Add(new PriceProductItem() { Code = _code, Text = _text, Price = _price, ExtraKmPrice = _extrakmpris, EvtText = _evttekst });
+                        }
+
+                        priceListItems.Add(new PriceListItem()
+                        {
+                            LocationId = _locationId,
+                            CarType = _carType,
+                            CarGroup = _carGroup,
+                            CarGroupFilRef = _carGroupFileRef,
+                            CarGroupSpecialTopText = _carGroupspecialTopText,
+                            CarGroupSpecialBottomText = "",
+                            PriceProductLines = ppi
+                        });
+
+
+                    }
+                }
+
+                return Tuple.Create(apc, priceListItems);
+            }
+
+        }
+       
+
+        public Tuple<APIMethodControl, List<PriceListExtraItem>> GetPriceListExtra(BasicStructure basic, int locationId, string categoryId)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var priceEx = new List<PriceListExtraItem>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(locationId.ToString());
+                temp.Add(categoryId.ToString());
+                temp.Add("EXTRA");
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if ((keys.Length > 0) && (keys[0].ToLower() == errorstring))
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    for (var i = 0; i < keys.Length; i += 4)
+                    {
+                        priceEx.Add(new PriceListExtraItem()
+                        {
+                            LocationId = keys[i + 0],
+                            ExtraProductId = Helpers.StringEmptyToInt(keys[i + 1]),
+                            ExtraDescription = keys[i + 2],
+                            ExtraPrice = keys[i + 3]
+                        });
+
+                    }
+                }
+                return Tuple.Create(apc, priceEx);
+            }
+
+        }
+        #endregion
+
+        #region 03 GetAvailabillityList
+        /// <summary>
+        /// 03 GetAvailabillityList
+        /// </summary>
+        /// <param name="basic"></param>
+        /// <param name="LocationId"></param>
+        /// <param name="ProductId"></param>
+        /// <param name="ReturnLlocationId"></param>
+        /// <param name="CategoryId"></param>
+        /// <param name="PickupDate"></param>
+        /// <param name="ReturnDate"></param>
+        /// <param name="PickupTime"></param>
+        /// <param name="returnTime"></param>
+        /// <param name="Age"></param>
+        /// <returns></returns>
+        public Tuple<APIMethodControl, List<AvailabillityItem_PS>> GetAvaiabillityList(BasicStructure basic, int locationId, int productId, int returnLocationId, string categoryId, string pickupDate, string returnDate, string pickupTime, string returnTime, int age)
+        {
+
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var locationListItems = new List<AvailabillityItem_PS>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(locationId.ToString());
+                temp.Add(productId.ToString());
+                temp.Add(returnLocationId.ToString());
+                temp.Add(categoryId.ToString());
+                temp.Add(pickupDate);
+                temp.Add(returnDate);
+                temp.Add(pickupTime);
+                temp.Add(returnTime);
+                temp.Add(age.ToString());
+
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString2(text);
+
+                if (keys[0].Data[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[0].Data[1];
+                    apc.ErrorMessage = keys[0].Data[2];
+                }
+                else
+                {
+                
+                 if (keys.Count > 0)
+                {
+                    apc.Succes = true;
+
+                    foreach (ReceivedLine line in keys)
+                    {
+                        var ps = new AvailabillityItem_PS();
+
+                        //for (int i = 0; i < line.ListInLIstIndex; i++)
+                        //{
+                            ps.locationOut = int.Parse(line.Data[0]);
+                            ps.carType = line.Data[1];
+                            ps.carGroup = line.Data[2];
+                            ps.locationIn = int.Parse(line.Data[3]);
+                            ps.pickupDate = line.Data[4];
+                            ps.returnDate = line.Data[5];
+                            ps.pickupTime = line.Data[6];
+                            ps.returnTime = line.Data[7];
+                            ps.duration = int.Parse(line.Data[8]);
+                            
+                            ps.productId = int.Parse(line.Data[9]);
+                            ps.productName = line.Data[10];
+                            ps.productInclText = line.Data[11];
+                            ps.productFilRef = line.Data[12];
+                            ps.productInclKm = line.Data[13];
+                            ps.productExtraKm = line.Data[14];
+                            ps.productDurableText = line.Data[15];
+
+                            ps.pickupText = line.Data[16];
+                            ps.returnText = line.Data[17];
+                            ps.inviteText = line.Data[18];
+
+                            ps.bookStatus = int.Parse(line.Data[19]);
+                            ps.bookStatusTekst = line.Data[20];
+
+                            ps.rentPricePrDay = line.Data[21];
+                            ps.rentTotalPrice = line.Data[22];
+                            ps.payPickupCashFlag = int.Parse(line.Data[23]);
+                            ps.depositPickupCash = line.Data[24];
+                            ps.payPickupCardFlag = int.Parse(line.Data[25]);
+                            ps.depositPickupCard = line.Data[26];
+                            ps.payOnlineFlag = int.Parse(line.Data[27]);
+                            ps.depositDescription = line.Data[28];
+
+                            
+                            var bcs = new List<object>();
+
+                            for (int i = line.Data.Length-1; i > line.ListInLIstIndex; i--)
+                            {
+                                if (line.Data[i].ToUpper() == "CHECKBOX")
+                                {
+                                    //7 strings
+                                    var chkbox = new Checkbox() { ProductId = line.Data[i - 7], Description = line.Data[i - 6], Enabled = Helpers.ConvertStringToBool(line.Data[i-1]), Price= line.Data[i-4], TypeName = "CHECKBOX" };
+                                    bcs.Add(chkbox);
+                                    //Recalc
+                                    i = i - 7;
+                                }
+
+                                if (line.Data[i].ToUpper() == "DROPDOWNEXTRA")
+                                {
+                                    var ddlitem = new DropDownList() { TypeName = "DROPDOWNEXTRA" };
+                                    var ddllist = new List<ddlItem>();
+                                    int res = 0;
+
+                                    do
+                                    {
+                                        int.TryParse(line.Data[i - 5], out res);
+                                        var dditem0 = new ddlItem() { ElementId = line.Data[i - 3], ElementText = line.Data[i - 2], ElementPrice = line.Data[i - 1] };
+                                        ddllist.Add(dditem0);
+                                        i = i - 3;
+                                        
+                                    } while (res <= 0);
+
+                                    ddlitem.ddlItems = ddllist;
+                                    ddlitem.SelectedElement = line.Data[i - 1];
+                                    ddlitem.NoOfElements = int.Parse(line.Data[i - 2]);
+
+                                    ddlitem.Description = line.Data[i - 3];
+                                    ddlitem.ProductId = line.Data[i - 4]; 
+                                   
+
+                                    bcs.Add(ddlitem);
+                                }
+
+                            }
+                            //   var chkbox = new Checkbox() { ProductId = "12", Description = "3434", enabled = true, TypeName = "CHECKBOX" };
+                            //   bcs.Add(chkbox);
+
+                    //        var dditem0 = new ddlItem() { ElementId = 1, ElementPrice = "90", ElementText = "ggg1" };
+                    //        var dditem1 = new ddlItem() { ElementId = 2, ElementPrice = "91", ElementText = "ggg2" };
+                    //        var dditem2 = new ddlItem() { ElementId = 3, ElementPrice = "92", ElementText = "ggg3" };
+
+                    //        var ddllist = new List<ddlItem>();
+                    //        ddllist.Add(dditem0);
+                    //        ddllist.Add(dditem1);
+                    //        ddllist.Add(dditem2);
+                    //        var ddlitem = new DropDownList() { ProductId = "23", Description = "prod 23", TypeName = "DROPDOWN", ddlItems = ddllist };
+
+                    //        bcs.Add(ddlitem);
+
+                            ps.ekstras = bcs;
+
+                            locationListItems.Add(ps);
+
+                        //}
+                    }
+                }
+                }
+              
+                  
+                
+
+                return Tuple.Create(apc, locationListItems);
+            }
+            
+        }
+        #endregion
+
+        #region 05 UpdatePrice
+        public Tuple<APIMethodControl, List<PriceInfo>> UpdatePrice(BasicStructure basic, Price2 price)
+        {
+
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var priceinfos = new List<PriceInfo>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(price.locationId.ToString());
+                temp.Add(price.returnLocationId.ToString());
+                temp.Add(price.pickupDate);
+                temp.Add(price.pickupTime);
+                temp.Add(price.returnDate);
+                temp.Add(price.returnTime);
+                temp.Add(price.categoryId.ToString());
+                temp.Add(price.productId.ToString());
+
+                foreach (ExtraProduct ep in price.extras)
+                {
+                    temp.Add(ep.id.ToString());
+                    temp.Add(ep.numbUnit.ToString());
+
+                }
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    for (var i = 0; i < keys.Length; i += 21)
+                    {
+                        priceinfos.Add(new PriceInfo()
+                        {
+                            Total = keys[i + 0],
+                            DepositOnline = keys[i + 1],
+                            DepositCash = keys[i + 2],
+                            DepositCreditCard = keys[i + 3],
+                            TotalDepositOnline = keys[i + 4],
+                            TotalDepositCash = keys[i + 5],
+                            TotalDepositCreditCard = keys[i + 6],
+                            TotalExtraPrice = keys[i + 7],
+                            TotalExclusiveTotalExtraPrice = keys[i + 8],
+                            BookStatus = Helpers.StringEmptyToInt(keys[i + 9]),
+                            BookStatusText = keys[i + 10],
+                            DepositDescription = keys[i + 11],
+                            PayCashOnCollectFlag = Helpers.StringEmptyToInt(keys[i + 12]),
+                            PayCardOnCollectFlag = Helpers.StringEmptyToInt(keys[i + 13]),
+                            PayOnlineFlag = Helpers.StringEmptyToInt(keys[i + 14]),
+                            RentPricePrDay = keys[i + 15],
+                            PickupText = keys[i + 16],
+                            ProductDeductibleText = keys[i + 17],
+                            NumberOfDays = Helpers.StringEmptyToInt(keys[i + 18]),
+                            NumberOfKMs = Helpers.StringEmptyToInt(keys[i + 19]),
+                            ProductName = keys[i + 20]
+                        });
+                    }
+                }
+                return Tuple.Create(apc, priceinfos);
+            }
+        }
+        #endregion
+
+        #region 10 SubmitRental
+        /// <summary>
+        /// SubmitRental
+        /// </summary>
+        /// <param name="basic"></param>
+        /// <param name="rent"></param>
+        /// <returns></returns>
+        public Tuple<APIMethodControl, RentalInfo>  SubmitRental(BasicStructure basic, Rental_PS rent)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var info = new RentalInfo();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(rent.locationId.ToString());
+                temp.Add(rent.returnLocationId.ToString());
+                temp.Add(rent.productId.ToString());
+                temp.Add(rent.pickupDate);
+                temp.Add(rent.pickupTime);
+                temp.Add(rent.returnDate);
+                temp.Add(rent.returnTime);
+                temp.Add(rent.categoryId.ToString());
+                temp.Add(rent.coRenterName.ToString());
+                temp.Add(rent.coRenterSurName.ToString());
+                temp.Add(rent.coRenterLicenseNo.ToString());
+                temp.Add(rent.coRenterBirthDay.ToString());
+                temp.Add(rent.rekvisitionNo.ToString());
+                temp.Add(rent.payType.ToString());
+                
+                for (int i =0; i<10; i++)
+                {
+                    try
+                    {
+                        temp.Add(rent.drivers[i].ToString());
+                    }
+                    catch
+                    {
+                        temp.Add("");
+                    }
+                }
+
+                temp.Add(rent.bookStatus.ToString());
+                temp.Add(rent.renterName.ToString());
+                temp.Add(rent.renterBirthDay.ToString());
+                temp.Add(rent.renterAddress.ToString());
+                temp.Add(rent.renterZipCity.ToString());
+                temp.Add(rent.renterPhone.ToString());
+                temp.Add(rent.renterEmail.ToString());
+
+                foreach (ExtraProduct ep in rent.extras)
+                {
+                    temp.Add(ep.id.ToString());
+                    temp.Add(ep.numbUnit.ToString());
+
+                }
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    info.ReservationNo = keys[0];
+                    info.TotalPrice = keys[1];
+                    info.DepositOnline = keys[2];
+                    info.DepositPickupCash = keys[3];
+                    info.DepositPickupCard = keys[4];
+                    info.RentPlusDepositOnline = keys[5];
+                    info.RentPlusDepositPickupCash = keys[6];
+                    info.RentPlusDepositPickupCard = keys[7];
+                    info.AddOnsTotalPrice = keys[8];
+                    info.TotalPriceExclAddOnsTotalPrice = keys[9];
+                }
+
+                return Tuple.Create(apc, info);
+            }
+
+        
+        }
+        #endregion
+
+        #region 15 GetFrontPageDefault
+        /// <summary>
+        /// GetFrontPageDefault
+        /// </summary>
+        /// <param name="basic"></param>
+        /// <returns></returns>
+        public Tuple<APIMethodControl, FrontPageDefault_PS> GetFrontPageDefault(BasicStructure basic)
+        {
+
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var frontpagedefault = new FrontPageDefault_PS();
+
+                var temp = FillBasic(basic);
+
+                var apc = new APIMethodControl();
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    frontpagedefault.PickUpDate = keys[0];
+                    frontpagedefault.PickupTime = keys[1];
+                    frontpagedefault.ReturnDate = keys[2];
+                    frontpagedefault.ReturnTime = keys[3];
+                    frontpagedefault.MinAge = int.Parse(keys[4]);
+                    frontpagedefault.MaxAge = int.Parse(keys[5]);
+                    frontpagedefault.DefaultLocationNo = int.Parse(keys[6]);
+                    frontpagedefault.DefaultPickupTime = keys[7];
+                    frontpagedefault.DefaultReturnTime = keys[8]; 
+                }
+
+
+                return Tuple.Create(apc, frontpagedefault); ;
+            }
+
+        
+
+        
+
+        }
+        #endregion
+
+        #region 17 DibsResult
+        public Tuple<APIMethodControl, DibsResultItem> DibsResult(BasicStructure basic, int bookingId, int paymentFlag, int paymentType, int paymentCode, int paymentAmount, int depositPaymentCode, int depositPaymentAmount)
+        {
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var apc = new APIMethodControl();
+
+                var dibres = new DibsResultItem();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(bookingId.ToString());
+                temp.Add(paymentFlag.ToString());
+                temp.Add(paymentType.ToString());
+                temp.Add(paymentCode.ToString());
+                temp.Add(paymentAmount.ToString());
+                temp.Add(depositPaymentCode.ToString());
+                temp.Add(depositPaymentAmount.ToString());
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    dibres.Result = keys[0];
+                    dibres.OptionalTxt = keys[1];
+                }
+
+                return Tuple.Create(apc, dibres);
+            }
+        }
+        #endregion
+
+        #region 21 PromotionUpdate
+        public Tuple<APIMethodControl, List<PromotionInfo>> PromotionUpdate(BasicStructure basic, Price2 price)
+        {
+
+            using (var context = WebAPIManagerFactory.CreateContext(ip7913, port7913, _logfile))
+            {
+                var promotioninfos = new List<PromotionInfo>();
+
+                var apc = new APIMethodControl();
+
+                var temp = FillBasic(basic);
+
+                temp.Add(price.locationId.ToString());
+                temp.Add(price.returnLocationId.ToString());
+                temp.Add(price.pickupDate);
+                temp.Add(price.pickupTime);
+                temp.Add(price.returnDate);
+                temp.Add(price.returnTime);
+                temp.Add(price.categoryId.ToString());
+                temp.Add(price.productId.ToString());
+
+                foreach (ExtraProduct ep in price.extras)
+                {
+                    temp.Add(ep.id.ToString());
+                    temp.Add(ep.numbUnit.ToString());
+
+                }
+
+
+
+                var str = Helpers.EncodeString(temp.ToArray());
+
+                var text = context.GetData(str);
+
+                var keys = Helpers.DecodeString(text);
+
+                if (keys[0].ToLower() == errorstring)
+                {
+                    apc.Succes = false;
+                    apc.ErrorCode = keys[1];
+                    apc.ErrorMessage = keys[2];
+                }
+                else
+                {
+                    apc.Succes = true;
+                    for (var i = 0; i < keys.Length; i += 20)
+                    {
+                        promotioninfos.Add(new PromotionInfo()
+                        {
+                            Total = keys[i + 0],
+                            DepositOnline = keys[i + 1],
+                            DepositCash = keys[i + 2],
+                            DepositCreditCard = keys[i + 3],
+                            TotalDepositOnline = keys[i + 4],
+                            TotalDepositCash = keys[i + 5],
+                            TotalDepositCreditCard = keys[i + 6],
+                            TotalExtraPrice = keys[i + 7],
+                            TotalExclusiveTotalExtraPrice = keys[i + 8],
+                            BookStatus = Helpers.StringEmptyToInt(keys[i + 9]),
+                            BookStatusText = keys[i + 10],
+                            PayCashOnCollectFlag = Helpers.StringEmptyToInt(keys[i + 11]),
+                            PayCardOnCollectFlag = Helpers.StringEmptyToInt(keys[i + 12]),
+                            PayOnlineFlag = Helpers.StringEmptyToInt(keys[i + 13]),
+                            DepositDescription = keys[i + 14],
+                            RentPricePrDay = keys[i + 15],
+                            Promotion = keys[i + 16],
+                            PromotionText = keys[i + 17],
+                            TotalExclPromotion = keys[i + 18],
+                            PickupText = keys[i + 19],
+
+                        });
+                    }
+                }
+                return Tuple.Create(apc, promotioninfos);
+            }
+        }
+        #endregion
+    }
+}

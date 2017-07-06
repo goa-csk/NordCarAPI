@@ -1,0 +1,25 @@
+#! /bin/sh
+prog=$1
+para="win=0"
+KREDS=/export/home/z/ export KREDS
+#EXECPATH=/export/home/nyexec/ export EXECPATH
+#EXECSPEC=/export/home/nyexec/ export EXECSPEC
+EXECPATH=/exec/00/ export EXECPATH
+EXECSPEC=/exec/40/ export EXECSPEC
+E_SPOOL=/export/home/e_spool/ export E_SPOOL
+TMPDIR=/export/home/tmp export TMPDIR
+MENUID=zt export MENUID
+DBTYPE=pg export DBTYPE
+ENV=env40nypg export ENV
+cd $KREDS
+if [ "$1" = "10w" ]
+then
+	prog="10n"
+	para="win=1"
+fi
+if [ "$1" = "05w" ]
+then
+	prog="05n"
+	para="win=1"
+fi
+exec /exec/40/p79$prog tgnkonv=1 $para $2 $3

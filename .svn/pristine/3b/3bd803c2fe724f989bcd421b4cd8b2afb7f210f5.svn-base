@@ -1,0 +1,38 @@
+﻿using System;
+using System.CodeDom;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NordCar.Carla.Data.Entities.CustomerPrivate
+{
+    public class CustomerPrivateListItem
+    {
+        public string CustomerPrivateNumber { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+    }
+
+    public class CustomerPrivate
+    {
+        public string CustomerPrivateNumber { get; set; }
+        public string Brand { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string AdressLine1 { get; set; }
+        public string AdressLine2 { get; set; }
+        public string AdressLine3 { get; set; }
+        public string City { get; set; }
+        public string ZipCode { get; set; }
+        public string Country { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string DateOfBirth { get; set; }
+        public string DriverLicenseNumber { get; set; }
+        public string AgreementNumber { get; set; }
+        public string Comment { get; set; }
+        public string Status { get; set; }
+        public string CommentToStatus { get; set; }
+    }
+}

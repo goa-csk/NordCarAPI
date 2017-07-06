@@ -1,0 +1,242 @@
+﻿using NordCar.WebAPI.Messages;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using NordCar.Carla.Data.Repository;
+using AutoMapper;
+using NordCar.WebAPI.BootStrapper;
+using NordCar.WebAPI.Models;
+using System.Web.Http.Cors;
+using System.Web;
+using NordCar.WebAPI.Filter;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Net.Http.Headers;
+
+
+namespace NordCar.WebAPI.Controllers
+{
+    public class BaseAPIController : ApiController
+    {
+        protected BookTypes ConvertIntToBookType(int val)
+        {
+            return (BookTypes)val;
+
+        }
+        
+        protected BasicStructure fillbasics(FunctionList flist, BookTypes booktypes)
+        {
+            return new BasicStructure() { FunctionId = flist, Language = LanguageList.DA, BookTypes = booktypes, IPAddress = GetClientIp(Request), CompanyDealId = "", CustomerId = "", ExtraId = "", VoucherCode = "", OrgBookNr = "", StepNr = "" };
+
+        }
+
+        protected BasicStructure fillbasics(FunctionList flist, BasicStructure1 bStruct)
+        {
+            BasicStructure tempStructure = new BasicStructure();
+
+            if (bStruct == null) //Default value if empty
+            {
+                tempStructure.BookTypes = BookTypes.ECBOOK;
+                tempStructure.Language = LanguageList.DA;
+
+                if (bStruct == null)
+                {
+                    tempStructure.IPAddress = GetClientIp(Request);
+             
+                }
+                else
+                {
+                    if (bStruct.IPAddress.Trim() != "" )
+                        tempStructure.IPAddress = bStruct.IPAddress;
+                    else
+                        tempStructure.IPAddress = GetClientIp(Request);
+                }
+             
+                tempStructure.CompanyDealId = "";
+                tempStructure.CustomerId = "";
+                tempStructure.ExtraId = "";
+                tempStructure.VoucherCode = "";
+                tempStructure.OrgBookNr = "";
+                tempStructure.StepNr = "";
+            }
+            else
+            {
+                tempStructure.BookTypes = (bStruct.BookTypes == null ? BookTypes.ECBOOK : ConvertBookTypeFromString(bStruct.BookTypes));
+                tempStructure.Language = (bStruct.Language == null ? LanguageList.DA : ConvertLanguageFromString(bStruct.Language));
+                tempStructure.IPAddress = bStruct.IPAddress ?? GetClientIp(Request);
+                tempStructure.CompanyDealId = bStruct.CompanyDealId ?? "";
+                tempStructure.CustomerId = bStruct.CustomerId ?? "";
+                tempStructure.ExtraId = bStruct.ExtraId ?? "";
+                tempStructure.VoucherCode = bStruct.VoucherCode ?? "";
+                tempStructure.OrgBookNr = bStruct.OrgBookNr ?? "";
+                tempStructure.StepNr = bStruct.StepNr ?? "";
+            }
+
+
+            return new BasicStructure() { FunctionId = flist, Language = tempStructure.Language, BookTypes = tempStructure.BookTypes, IPAddress = tempStructure.IPAddress, CompanyDealId = tempStructure.CompanyDealId, CustomerId = tempStructure.CustomerId, ExtraId = tempStructure.ExtraId, VoucherCode = tempStructure.VoucherCode, OrgBookNr = tempStructure.OrgBookNr, StepNr = tempStructure.StepNr };
+
+        }
+
+        BookTypes ConvertBookTypeFromString(string bookType)
+        {
+            BookTypes rtnVal = BookTypes.ECBOOK;
+            switch (bookType)
+            {
+                case "DON2BOOK":
+                    rtnVal = BookTypes.DON2BOOK;
+                    break;
+                case "PSBOOK":
+                    rtnVal = BookTypes.PSBOOK;
+                    break;
+                case "DAT":
+                    rtnVal = BookTypes.DAT;
+                    break;
+                case "SOS":
+                    rtnVal = BookTypes.SOS;
+                    break;
+                case "CARLSBERGVIKAR":
+                    rtnVal = BookTypes.CARLSBERGVIKAR;
+                    break;
+                
+            }
+
+            return rtnVal;
+        }
+
+        LanguageList ConvertLanguageFromString(string language)
+        {
+            LanguageList rtnVal = LanguageList.DA;
+            switch (language)
+            {
+                case "EN":
+                    rtnVal = LanguageList.EN;
+                    break;
+            }
+
+            return rtnVal;
+        }
+
+        protected string GetClientIp(HttpRequestMessage request)
+        {
+            //try
+            //{
+                if (request.Properties.ContainsKey("MS_HttpContext"))
+                {
+                    return ((HttpContextWrapper)request.Properties["MS_HttpContext"]).Request.UserHostAddress;
+                }
+
+                else
+                {
+                    return "";
+                }
+            //}
+            //catch
+            //{
+            //    return "";
+            //}
+        }
+
+        protected NotFoundTextPlainActionResult NotFound(string message)
+        {
+            return new NotFoundTextPlainActionResult(message, Request);
+        }
+
+        protected NotFoundJSONActionResult Error(APIMethodControl message, HttpStatusCode status)
+        {
+            return new NotFoundJSONActionResult(message, Request, status);
+        }
+    }
+
+    public class NotFoundTextPlainActionResult : IHttpActionResult
+    {
+        public string Message { get; private set; }
+
+        public HttpRequestMessage Request { get; private set; }
+
+        //Constructor
+        public NotFoundTextPlainActionResult(string message, HttpRequestMessage request)
+        {
+            if (message == null)
+            {
+                throw new ArgumentNullException("message");
+            }
+
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
+
+            Message = message;
+            Request = request;
+        }
+
+        
+        public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
+        {
+            return Task.FromResult(Execute());
+        }
+
+        public HttpResponseMessage Execute()
+        {
+            HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.NotFound);
+            response.Content = new StringContent(Message); // Put the message in the response body (text/plain content).
+            response.RequestMessage = Request;
+            return response;
+        }
+    }
+
+    public class NotFoundJSONActionResult : IHttpActionResult
+    {
+        public APIMethodControl Message { get; private set; }
+
+        public HttpRequestMessage Request { get; private set; }
+
+        public HttpStatusCode StatusCode { get; private set; }
+
+        //Constructor
+        public NotFoundJSONActionResult(APIMethodControl message, HttpRequestMessage request, HttpStatusCode status)
+        {
+            if (message == null)
+            {
+                throw new ArgumentNullException("message");
+            }
+
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
+
+            if ( status == null)
+            {
+                throw new ArgumentNullException("status");
+            }
+
+
+            Message = message;
+            Request = request;
+            StatusCode = status;
+        }
+
+
+        public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
+        {
+            return Task.FromResult(Execute());
+        }
+
+        public HttpResponseMessage Execute()
+        {
+            //http://forums.asp.net/t/1844684.aspx?Web+api+method+return+json+in+string
+            HttpResponseMessage response = new HttpResponseMessage(StatusCode);
+            string err = "[{\"ErrorCode\":\"" + Message.ErrorCode + "\"},{\"ErrorMessage\":\"" + Message.ErrorMessage + "\"}]";
+            response.Content = new StringContent(err); // Put the message in the response body (text/plain content).
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            response.RequestMessage = Request;
+            return response;
+        }
+    }
+
+   
+}

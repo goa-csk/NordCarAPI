@@ -1,0 +1,108 @@
+﻿using Newtonsoft.Json;
+using NordCar.WebAPI.Messages;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+using System.Web.Http;
+using static NordCar.WebAPI.Messages.MyExceptionHandler;
+
+namespace NordCar.WebAPI.Handlers
+{
+    /*https://www.exceptionnotfound.net/custom-validation-in-asp-net-web-api-with-fluentvalidation/
+       Step 1: We wait for the response. After all, for this handler, we don't care about the request or anything besides the response.
+       Step 2: We get the response content. What that content is determines whether or not we need to run Steps 3-5.
+       Step 3: If the content is an error (of type HttpError), set the returned content to null.
+       Step 4: Insert the ModelState errors. We do this by reading the response content, deserializing that first to an anonymous object then to a JObject (using Json.Net) and finally extracting the error messages themselves.
+       Step 5: Create a new response.
+       Step 6: Add back the response headers (they should be the same in the new response as in the generated response).
+   */
+
+    public class ResponseWrappingHandler : DelegatingHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            //Step 1: Wait for the Response
+            var response = await base.SendAsync(request, cancellationToken);
+            
+            return BuildApiResponse(request, response);
+        }
+
+        private HttpResponseMessage BuildApiResponse(HttpRequestMessage request, HttpResponseMessage response)
+        {
+            object content;
+            List<string> modelStateErrors = new List<string>();
+
+            //Step 2: Get the Response Content
+            if (response.TryGetContentValue(out content) && !response.IsSuccessStatusCode)
+            {
+                HttpError error = content as HttpError;
+                if (error != null)
+                {
+                    //Step 3: If content is an error, return nothing for the Result.
+                    content = null; //We have errors, so don't return any content
+                    //Step 4: Insert the ModelState errors              
+                    if (error.ModelState != null)
+                    {
+                        //Read as string
+                        var httpErrorObject = response.Content.ReadAsStringAsync().Result;
+
+                        //Convert to anonymous object
+                        var anonymousErrorObject = new { message = "", ModelState = new Dictionary<string, string[]>() };
+
+                        // Deserialize anonymous object
+                        var deserializedErrorObject = JsonConvert.DeserializeAnonymousType(httpErrorObject, anonymousErrorObject);
+
+                        // Get error messages from ModelState object
+                        var modelStateValues = deserializedErrorObject.ModelState.Select(kvp => string.Join(". ", kvp.Value));
+
+                        for (int i = 0; i < modelStateValues.Count(); i++)
+                        {
+                            modelStateErrors.Add(modelStateValues.ElementAt(i));
+                        }
+                    }
+                    else
+                    {
+                        foreach (var h in error)
+                        {
+                            modelStateErrors.Add(h.Value.ToString());
+                        }
+                    }
+                }
+
+
+               
+            }
+
+
+
+            //Step 5: Create a new response
+
+            //var newResponse = request.CreateResponse(response.StatusCode, new ResponsePackage(content, modelStateErrors));
+            var newResponse = (modelStateErrors.Count == 0) ? response : ErrorResponse(response, modelStateErrors, request);
+
+
+            //Step 6: Add Back the Response Headers
+            //foreach (var header in response.Headers) //Add back the response headers
+            //{
+            //    newResponse.Headers.Add(header.Key, header.Value);
+            //}
+
+            return newResponse;
+        }
+
+        private HttpResponseMessage ErrorResponse(HttpResponseMessage response, List<string> error, HttpRequestMessage request)
+        {
+            var err = new Models.APIMethodControl() { ErrorCode = "ReqErr", ErrorMessage = String.Join(", ", error.ToArray()), Message = "", MessageId = "", Succes = false };
+            var res = new NotFoundJSONActionResult(err, request, response.StatusCode).Execute();
+            foreach (var header in response.Headers) //Add back the response headers
+            {
+                res.Headers.Add(header.Key, header.Value);
+            }
+            return (res);
+        }
+    }
+}

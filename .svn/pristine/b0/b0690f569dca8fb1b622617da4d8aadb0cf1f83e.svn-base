@@ -1,0 +1,122 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace NordCar.Carla.Data.Entities
+{
+    public enum FunctionList 
+    {
+       Hello = 0,
+       GetCarsList,
+       GetPriceList,
+       GetAvailabillityList,
+       SelectProduct,
+       UpdatePrice,
+       GetLocationList,
+       Login,
+       Account,
+       ReturnCompanyCustomerId,
+       SubmitRental,
+       GetBookingList,
+       CancelRental,
+       EditRental,
+       GetAddDefaults,
+       GetFrontPageDefault,
+       UpdateCompanyDrivers,
+       DibsResult,
+       GetInvalidPickupDates,
+       GetInvalidReturnDates,
+       GetOpenHours,
+       PromotionUpdates,
+       Func22,
+       PDF,
+       GetLocations,
+       GetLocationDetails,
+       GetCountries,
+       GetAvailableCars,
+       GetCarTypes,
+       GetCarExtras,
+       UpdatePrices,
+       MakeReservation,
+       SearchBooking,
+       CancelBooking,
+       GetPdfBooking,
+       CreateAccount,
+       ECLogin,
+       ForgotPassword,
+       ModifyAccount,
+       GetCarSpecifications,
+       SecretQuestions,
+       PaymentCardTypes,
+       FrequentTravelerPrograms,
+       GetLocationDateExceptions,
+       ECDibsResult,
+       CheckPromotionCode,
+       GetCarTypesByLocation,
+       GetReservationText,
+       notok,
+       GetPriceSheetList,
+       GetPromotionCodeList,
+       AddPromotionCode,
+       EditPromotionCode,
+       DeletePromotionCode,
+       AddMicrosite,
+       EditMicrosite,
+       ListMicrosite,
+       GetReservationStatusQueue,
+       ReservationStatusQueueMessageProcessed,
+       GetResRAData
+
+
+
+    }
+
+    public enum LanguageList
+    {
+        DA,
+        EN
+    }
+
+    public enum BookTypes
+    {
+        DON2BOOK = 1, 
+        PSBOOK,
+        ECBOOK,
+        DAT,
+        SOS,
+        CARLSBERGVIKAR
+    }
+    
+    public class BasicStructure
+    {
+        public FunctionList FunctionId { get; set; }
+        public LanguageList Language { get; set; }
+        public BookTypes BookTypes { get; set; }
+        public string IPAddress { get; set; }
+        public string CompanyDealId { get; set; }
+        public string CustomerId { get; set; }
+        public string ExtraId { get; set; }
+        public string VoucherCode { get; set; }
+        public string OrgBookNr { get; set; }
+        public string StepNr { get; set; }
+    }
+
+    public static class Helper
+    {
+        public static List<string> GetBookTypes()
+        {
+            return Enum.GetNames(typeof(BookTypes)).ToList();
+        }
+
+        public static BookTypes ParseEnum(string value)
+        {
+            BookTypes myvalue;
+            Enum.TryParse<BookTypes>(value, true,out myvalue);
+            return myvalue;
+        }
+
+        
+    
+    }
+}

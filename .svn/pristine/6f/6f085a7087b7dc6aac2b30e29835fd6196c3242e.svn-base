@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4930A787-0E3B-4D7C-AC3E-C2998A596658}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NordCar.Carla.Data</RootNamespace>
+    <AssemblyName>NordCar.Carla.Data</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Practices.EnterpriseLibrary.Common">
+      <HintPath>..\packages\EnterpriseLibrary.Common.6.0.1304.0\lib\NET45\Microsoft.Practices.EnterpriseLibrary.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.EnterpriseLibrary.Logging">
+      <HintPath>..\packages\EnterpriseLibrary.Logging.6.0.1304.0\lib\NET45\Microsoft.Practices.EnterpriseLibrary.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Entities\Account.cs" />
+    <Compile Include="Entities\APIMethodControl.cs" />
+    <Compile Include="Entities\AvailabillityItem_DON.cs" />
+    <Compile Include="Entities\AvailabillityItem_PS.cs" />
+    <Compile Include="Entities\BaseControl.cs" />
+    <Compile Include="Entities\Booking.cs" />
+    <Compile Include="Entities\CarListItem_DON.cs" />
+    <Compile Include="Entities\CompanyCustomer.cs" />
+    <Compile Include="Entities\CompanyDriverItem.cs" />
+    <Compile Include="Entities\Defaults.cs" />
+    <Compile Include="Entities\DibsResultItem.cs" />
+    <Compile Include="Entities\EC\Account.cs" />
+    <Compile Include="Entities\EC\Booking.cs" />
+    <Compile Include="Entities\EC\CarDetail.cs" />
+    <Compile Include="Entities\EC\CarExtra.cs" />
+    <Compile Include="Entities\EC\CarType.cs" />
+    <Compile Include="Entities\EC\ResRAData.cs" />
+    <Compile Include="Entities\EC\QueueInfo.cs" />
+    <Compile Include="Entities\EC\Country.cs" />
+    <Compile Include="Entities\EC\Location.cs" />
+    <Compile Include="Entities\EC\LocationDetail.cs" />
+    <Compile Include="Entities\EC\PickDropInfo.cs" />
+    <Compile Include="Entities\EC\PriceCalculated.cs" />
+    <Compile Include="Entities\EC\PricePart.cs" />
+    <Compile Include="Entities\EC\Reservation.cs" />
+    <Compile Include="Entities\EC\ReservationText.cs" />
+    <Compile Include="Entities\FrontPageDefault_DON.cs" />
+    <Compile Include="Entities\FrontPageDefault_PS.cs" />
+    <Compile Include="Entities\InvalidDateItem.cs" />
+    <Compile Include="Entities\OpenHours.cs" />
+    <Compile Include="Entities\Location.cs" />
+    <Compile Include="Entities\Price2.cs" />
+    <Compile Include="Entities\PriceInfo_DON.cs" />
+    <Compile Include="Entities\PromotionInfo.cs" />
+    <Compile Include="Entities\PriceInfo.cs" />
+    <Compile Include="Entities\PriceListExtraItem.cs" />
+    <Compile Include="Entities\PriceProductItem.cs" />
+    <Compile Include="Entities\PriceListItem.cs" />
+    <Compile Include="Entities\Product.cs" />
+    <Compile Include="Entities\Rental.cs" />
+    <Compile Include="Entities\RentalInfo.cs" />
+    <Compile Include="Entities\Station.cs" />
+    <Compile Include="Entities\CarStatus.cs" />
+    <Compile Include="Entities\User.cs" />
+    <Compile Include="Entities\UserInfo.cs" />
+    <Compile Include="Entities\CarGroup.cs" />
+    <Compile Include="Entities\Country.cs" />
+    <Compile Include="Entities\Brand.cs" />
+    <Compile Include="Entities\CarControlManager.cs" />
+    <Compile Include="Implementation\ECAPIManagerRepository.cs" />
+    <Compile Include="Implementation\PSAPIManagerRepository.cs" />
+    <Compile Include="Implementation\WebAPIManagerRepository.cs" />
+    <Compile Include="Infrastructure\FileLog.cs" />
+    <Compile Include="Infrastructure\Helpers.cs" />
+    <Compile Include="Infrastructure\SocketToCarla.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Entities\CarOverview.cs" />
+    <Compile Include="Entities\Car.cs" />
+    <Compile Include="Entities\BasicStructure.cs" />
+    <Compile Include="Entities\CarListItem.cs" />
+    <Compile Include="Repository\IECAPIManagerRepository.cs" />
+    <Compile Include="Repository\IPSAPIManagerRepository.cs" />
+    <Compile Include="Repository\IWebAPIManagerRepository.cs" />
+    <Compile Include="Entities\Model.cs" />
+    <Compile Include="Test\TestCollections.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

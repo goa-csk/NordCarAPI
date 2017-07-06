@@ -1,0 +1,333 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using AutoMapper;
+using NordCar.WebAPI;
+using NordCar.Carla.Data.Entities;
+using NordCar.Carla.Data.Entities.Promotion;
+using NordCar.Carla.Data.Entities.DiscountSheet;
+using NordCar.Carla.Data.Entities.MicroSite;
+
+
+namespace NordCar.WebAPI.BootStrapper
+{
+    public class Bootstrapper : IBootstrapper
+    {
+        public void Initialize()
+        {
+            //EC
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.PriceCalculated, NordCar.WebAPI.Models.EC.PriceCalculated>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.PriceCalculated, NordCar.Carla.Data.Entities.EC.PriceCalculated>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.Booking, NordCar.WebAPI.Models.EC.Booking>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.Booking, NordCar.Carla.Data.Entities.EC.Booking>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.Location, NordCar.WebAPI.Models.EC.Location>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.Location, NordCar.Carla.Data.Entities.EC.Location>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.OpeningHours, NordCar.WebAPI.Models.EC.OpeningHours>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.OpeningHours, NordCar.Carla.Data.Entities.EC.OpeningHours>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.Exception, NordCar.WebAPI.Models.EC.Exception>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.Exception, NordCar.Carla.Data.Entities.EC.Exception>();
+
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.LocationDetail, NordCar.WebAPI.Models.EC.LocationDetail>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.LocationDetail, NordCar.Carla.Data.Entities.EC.LocationDetail>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.Country, NordCar.WebAPI.Models.EC.Country>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.Country, NordCar.Carla.Data.Entities.EC.Country>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.PickDropInfo, NordCar.WebAPI.Models.EC.PickDropInfo>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.PickDropInfo, NordCar.Carla.Data.Entities.EC.PickDropInfo>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.Trip, NordCar.WebAPI.Models.EC.Trip>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.Trip, NordCar.Carla.Data.Entities.EC.Trip>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.Option, NordCar.WebAPI.Models.EC.Option>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.Option, NordCar.Carla.Data.Entities.EC.Option>();
+
+           
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.CarDetail, NordCar.WebAPI.Models.EC.CarDetail>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.CarDetail, NordCar.Carla.Data.Entities.EC.CarDetail>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.SelectedExtra, NordCar.WebAPI.Models.EC.SelectedExtra>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.SelectedExtra, NordCar.Carla.Data.Entities.EC.SelectedExtra>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.PricePart, NordCar.WebAPI.Models.EC.PricePart>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.PricePart, NordCar.Carla.Data.Entities.EC.PricePart>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.Reservation, NordCar.WebAPI.Models.EC.Reservation>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.Reservation, NordCar.Carla.Data.Entities.EC.Reservation>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.CarType, NordCar.WebAPI.Models.EC.CarType>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.CarType, NordCar.Carla.Data.Entities.EC.CarType>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.CarExtra, NordCar.WebAPI.Models.EC.CarExtra>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.CarExtra, NordCar.Carla.Data.Entities.EC.CarExtra>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.SelectedBase, NordCar.WebAPI.Models.EC.SelectedBase>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.SelectedBase, NordCar.Carla.Data.Entities.EC.SelectedBase>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.SelectedExtras, NordCar.WebAPI.Models.EC.SelectedExtras>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.SelectedExtras, NordCar.Carla.Data.Entities.EC.SelectedExtras>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.Reservation, NordCar.WebAPI.Models.EC.Reservation>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.Reservation, NordCar.Carla.Data.Entities.EC.Reservation>();
+            
+            //EC Account
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.Driver, NordCar.WebAPI.Models.EC.Driver>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.Driver, NordCar.Carla.Data.Entities.EC.Driver>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.Identification, NordCar.WebAPI.Models.EC.Identification>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.Identification, NordCar.Carla.Data.Entities.EC.Identification>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.FrequentTravelerProgram, NordCar.WebAPI.Models.EC.FrequentTravelerProgram>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.FrequentTravelerProgram, NordCar.Carla.Data.Entities.EC.FrequentTravelerProgram>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.Account, NordCar.WebAPI.Models.EC.Account>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.Account, NordCar.Carla.Data.Entities.EC.Account>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.Person, NordCar.WebAPI.Models.EC.Person>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.Person, NordCar.Carla.Data.Entities.EC.Person>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.Company, NordCar.WebAPI.Models.EC.Company>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.Company, NordCar.Carla.Data.Entities.EC.Company>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.DropDownListItem, NordCar.WebAPI.Models.EC.DropDownListItem>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.DropDownListItem, NordCar.Carla.Data.Entities.EC.DropDownListItem>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.CarSpec, NordCar.WebAPI.Models.EC.CarSpec>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.CarSpec, NordCar.Carla.Data.Entities.EC.CarSpec>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.CarTypeLocationDetails, NordCar.WebAPI.Models.EC.CarTypeLocationDetails>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.CarTypeLocationDetails, NordCar.Carla.Data.Entities.EC.CarTypeLocationDetails>();
+
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.ReservationText, NordCar.WebAPI.Models.EC.ReservationText>();
+            Mapper.CreateMap<NordCar.WebAPI.Models.EC.ReservationText, NordCar.Carla.Data.Entities.EC.ReservationText>();
+            
+    
+            //NOT EC
+            Mapper.CreateMap<APIMethodControl, Models.APIMethodControl>();
+            Mapper.CreateMap<Models.APIMethodControl, APIMethodControl>();
+
+             Mapper.CreateMap<LanguageList, Models.LanguageList>();
+            Mapper.CreateMap<Models.LanguageList, LanguageList>();
+
+            //Mapper.CreateMap<BookTypes, Models.BookTypes>();
+            //Mapper.CreateMap<Models.BookTypes, BookTypes>();
+
+            Mapper.CreateMap<BasicStructure, Models.BasicStructure>();
+            Mapper.CreateMap<Models.BasicStructure, BasicStructure>();
+
+            
+            Mapper.CreateMap<PriceProductItem, Models.PriceProductItem>();
+            Mapper.CreateMap<Models.PriceProductItem, PriceProductItem>();
+
+            //HUSK "PriceProductItem" skal også mappes da denne anvendes.
+            Mapper.CreateMap<PriceListItem, Models.PriceListItem>();
+            Mapper.CreateMap<Models.PriceListItem, PriceListItem>();
+
+            Mapper.CreateMap<PriceListExtraItem, Models.PriceListExtraItem>();
+            Mapper.CreateMap<Models.PriceListExtraItem, PriceListExtraItem>();
+
+            Mapper.CreateMap<PriceListItem_DON, Models.PriceListItem_DON>();
+            Mapper.CreateMap<Models.PriceListItem_DON, PriceListItem_DON>();
+
+            Mapper.CreateMap<PriceListItemExtra_DON, Models.PriceListItemExtra_DON>();
+            Mapper.CreateMap<Models.PriceListItemExtra_DON, PriceListItemExtra_DON>();
+            
+            //03 GetAvailabillityList
+            Mapper.CreateMap<AvailabillityItem_DON, Models.AvailabillityItem_DON>();
+            Mapper.CreateMap<Models.AvailabillityItem_DON, AvailabillityItem_DON>();
+
+            Mapper.CreateMap<BaseControl, Models.BaseControl>();
+            Mapper.CreateMap<Models.BaseControl, BaseControl>();
+
+            Mapper.CreateMap<Checkbox, Models.Checkbox>();
+            Mapper.CreateMap<Models.Checkbox, Checkbox>();
+
+            Mapper.CreateMap<ddlItem, Models.ddlItem>();
+            Mapper.CreateMap<Models.ddlItem, ddlItem>();
+
+            Mapper.CreateMap<DropDownList, Models.DropDownList>();
+            Mapper.CreateMap<Models.DropDownList, DropDownList>();
+
+            Mapper.CreateMap<DropDown, Models.DropDown>();
+            Mapper.CreateMap<Models.DropDown, DropDown>();
+
+
+            Mapper.CreateMap<AvailabillityItem_PS, Models.AvailabillityItem_PS>();
+            Mapper.CreateMap<Models.AvailabillityItem_PS, AvailabillityItem_PS>();
+
+            
+
+            //05 UpdatePrice
+            Mapper.CreateMap<ExtraProduct, Models.ExtraProduct>();
+            Mapper.CreateMap<Models.ExtraProduct, ExtraProduct>();
+
+            Mapper.CreateMap<Price2, Models.Price2>();
+            Mapper.CreateMap<Models.Price2, Price2>();
+            //05
+            Mapper.CreateMap<PriceInfo, Models.PriceInfo>();
+            Mapper.CreateMap<Models.PriceInfo, PriceInfo>();
+
+            Mapper.CreateMap<PriceInfo_DON, Models.PriceInfo_DON>();
+            Mapper.CreateMap<Models.PriceInfo_DON, PriceInfo_DON>();
+
+            //06
+            Mapper.CreateMap<Location, Models.Location>();
+            Mapper.CreateMap<Models.Location, Location>();
+
+            Mapper.CreateMap<Product, Models.Product>();
+            Mapper.CreateMap<Models.Product, Product>();
+
+            //07 Login
+            Mapper.CreateMap<User, Models.User.User>();
+            Mapper.CreateMap<Models.User.User, User>();
+
+            Mapper.CreateMap<UserCompany, Models.User.UserCompany>();
+            Mapper.CreateMap<Models.User.UserCompany, UserCompany>();
+
+            //08 Account
+            Mapper.CreateMap<Account, Models.Account>();
+            Mapper.CreateMap<Models.Account, Account>();
+            
+            //09
+            Mapper.CreateMap<Booking, Models.Booking>();
+            Mapper.CreateMap<Models.Booking, Booking>();
+
+            //10 SubmitRental
+            Mapper.CreateMap<Driver2, Models.Driver2>();
+            Mapper.CreateMap<Models.Driver2, Driver2>();
+
+            Mapper.CreateMap<Rental, Models.Rental>();
+            Mapper.CreateMap<Models.Rental, Rental>();
+
+            Mapper.CreateMap<Rental_PS, Models.Rental_PS>();
+            Mapper.CreateMap<Models.Rental_PS, Rental_PS>();
+
+
+            Mapper.CreateMap<RentalInfo, Models.RentalInfo>();
+            Mapper.CreateMap<Models.RentalInfo, RentalInfo>();
+
+            Mapper.CreateMap<CompanyCustomer, Models.CompanyCustomer>();
+            Mapper.CreateMap<Models.CompanyCustomer, CompanyCustomer>();
+
+            Mapper.CreateMap<Defaults, Models.Defaults>();
+            Mapper.CreateMap<Models.Defaults, Defaults>();
+            
+            //15
+            Mapper.CreateMap<FrontPageDefault_PS, Models.FrontPageDefault_PS>();
+            Mapper.CreateMap<Models.FrontPageDefault_PS, FrontPageDefault_PS>();
+
+            Mapper.CreateMap<FrontPageDefault_DON, Models.FrontPageDefault_DON>();
+            Mapper.CreateMap<Models.FrontPageDefault_DON, FrontPageDefault_DON>();
+
+            Mapper.CreateMap<DibsResultItem, Models.DibsResultItem>();
+            Mapper.CreateMap<Models.DibsResultItem, DibsResultItem>();
+
+            Mapper.CreateMap<CompanyDriverItem, Models.CompanyDriverItem>();
+            Mapper.CreateMap<Models.CompanyDriverItem, CompanyDriverItem>();
+
+            //18
+            Mapper.CreateMap<InvalidDateItem, Models.InvalidDateItem>();
+            Mapper.CreateMap<Models.InvalidDateItem, InvalidDateItem>();
+
+            Mapper.CreateMap<OpenHours, Models.OpenHours>();
+            Mapper.CreateMap<Models.OpenHours, OpenHours>();
+
+            Mapper.CreateMap<PromotionInfo, Models.PromotionInfo>();
+            Mapper.CreateMap<Models.PromotionInfo, PromotionInfo>();
+
+            Mapper.CreateMap<CarListItem, Models.CarListItem>();
+            Mapper.CreateMap<Models.CarListItem, CarListItem>();
+
+            Mapper.CreateMap<CarListItem_DON, Models.CarListItem_DON>();
+            Mapper.CreateMap<Models.CarListItem_DON, CarListItem_DON>();
+
+            Mapper.CreateMap<UserInfo, Models.UserInfo>();
+            Mapper.CreateMap<Models.UserInfo, UserInfo>();
+
+            Mapper.CreateMap<Brand, Models.Brand>();
+            Mapper.CreateMap<Models.Brand, Brand>();
+
+            Mapper.CreateMap<Model, Models.Model>();
+            Mapper.CreateMap<Models.Model, Model>();
+
+            Mapper.CreateMap<CarGroup, Models.CarGroup>();
+            Mapper.CreateMap<Models.CarGroup, CarGroup>(); 
+
+            Mapper.CreateMap<Country, Models.Country>();
+            Mapper.CreateMap<Models.Country, Country>();
+
+            Mapper.CreateMap<CarStatus, Models.CarStatus>();
+            Mapper.CreateMap<Models.CarStatus, CarStatus>();
+
+            Mapper.CreateMap<Station, Models.Station>();
+            Mapper.CreateMap<Models.Station, Station>();
+
+         
+            Mapper.CreateMap<Car, Models.CarDetailItem>()
+                .ForMember(dest => dest.licenseplate, opt => opt.MapFrom(src => src.LicensePlate))
+                .ForMember(dest => dest.brand, opt => opt.MapFrom(src => src.BrandName))
+                .ForMember(dest => dest.model, opt => opt.MapFrom(src => src.ModelName))
+                .ForMember(dest => dest.group, opt => opt.MapFrom(src => src.GroupName))
+                .ForMember(dest => dest.checkIn, opt => opt.MapFrom(src => src.CheckIn))
+                .ForMember(dest => dest.station, opt => opt.MapFrom(src => src.StationNo))
+                .ForMember(dest => dest.nationality, opt => opt.MapFrom(src => src.CountryName))
+                .ForMember(dest => dest.ra_transfer, opt => opt.MapFrom(src => src.RATransfer))
+                .ForMember(dest => dest.status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.fuel, opt => opt.MapFrom(src => src.Fuel))
+                .ForMember(dest => dest.km, opt => opt.MapFrom(src => src.Distance))
+                .ForMember(dest => dest.vintertires, opt => opt.MapFrom(src => src.VinterTires))
+                .ForMember(dest => dest.towbar, opt => opt.MapFrom(src => src.Towbar))
+                .ForMember(dest => dest.noofseats, opt => opt.MapFrom(src => src.NoOfSeat))
+                .ForMember(dest => dest.comment, opt => opt.MapFrom(src => src.Comment))
+                .ForMember(dest => dest.automatictransmission, opt => opt.MapFrom(src => src.AutomaticTransmission))
+                .ForMember(dest => dest.isNew, opt => opt.MapFrom(src => src.IsNew));
+            
+            Mapper.CreateMap<Models.CarDetailItem, Car>()
+                .ForMember(dest => dest.LicensePlate, opt => opt.MapFrom(src => src.licenseplate))
+                .ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.brand))
+                .ForMember(dest => dest.ModelName, opt => opt.MapFrom(src => src.model))
+                .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.group))
+                .ForMember(dest => dest.CheckIn, opt => opt.MapFrom(src => src.checkIn))
+                .ForMember(dest => dest.StationNo, opt => opt.MapFrom(src => src.station))
+                .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.nationality))
+                .ForMember(dest => dest.RATransfer, opt => opt.MapFrom(src => src.ra_transfer))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.status))
+                .ForMember(dest => dest.Fuel, opt => opt.MapFrom(src => src.fuel))
+                .ForMember(dest => dest.Distance, opt => opt.MapFrom(src => src.km))
+                .ForMember(dest => dest.VinterTires, opt => opt.MapFrom(src => src.vintertires))
+                .ForMember(dest => dest.Towbar, opt => opt.MapFrom(src => src.towbar))
+                .ForMember(dest => dest.NoOfSeat, opt => opt.MapFrom(src => src.noofseats))
+                .ForMember(dest => dest.Comment, opt => opt.MapFrom(src => src.comment))
+                .ForMember(dest => dest.AutomaticTransmission, opt => opt.MapFrom(src => src.automatictransmission))
+                .ForMember(dest => dest.IsNew, opt => opt.MapFrom(src => src.isNew));
+
+            Mapper.CreateMap<CarOverview, Models.CarOverviewItem>();
+            Mapper.CreateMap<Models.CarOverviewItem, CarOverview>();
+
+            //Promotion
+            Mapper.CreateMap<Promotion, Models.Promotion.Promotion>();
+            Mapper.CreateMap<Models.Promotion.Promotion, Promotion>();
+
+            Mapper.CreateMap<PromotionAdd, Models.Promotion.PromotionAdd>();
+            Mapper.CreateMap<Models.Promotion.PromotionAdd, PromotionAdd>();
+
+            //DiscountSheet
+            Mapper.CreateMap<DiscountSheet, Models.DiscountSheet.DiscountSheet>();
+            Mapper.CreateMap<Models.DiscountSheet.DiscountSheet, DiscountSheet>();
+
+            //MicroSites
+            Mapper.CreateMap<MicroSite, Models.MicroSites.MicroSite>();
+            Mapper.CreateMap<Models.MicroSites.MicroSite, MicroSite>();
+
+            //BookType
+            Mapper.CreateMap<NordCar.Carla.Data.Entities.EC.BookType, Models.EC.BookType>();
+            Mapper.CreateMap<Models.EC.BookType, NordCar.Carla.Data.Entities.EC.BookType>();
+        }
+    }
+} 

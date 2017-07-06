@@ -1,0 +1,137 @@
+﻿//using Common.Logging;
+using log4net.Config;
+using Quartz;
+using Quartz.Impl;
+using Quartz.Impl.Triggers;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.ServiceProcess;
+using System.Text;
+using System.Threading.Tasks;
+using log4net;
+//using log4net.Config;
+
+namespace SOSIntegrator
+{
+    public partial class Service1 : ServiceBase
+    {
+        private const string Group1 = "BusinessTasks";
+        private const string Job = "Job";
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+       
+        private static IScheduler _scheduler;
+        
+        public Service1()
+        {
+            InitializeComponent();
+            
+        }
+
+        public void OnDebug()
+        {
+            OnStart(null);
+        }
+
+        protected override void OnStart(string[] args)
+        {
+            XmlConfigurator.Configure();
+
+            ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
+            _scheduler = schedulerFactory.GetScheduler();
+            _scheduler.Start();
+
+            Log.Info("Starting Windows Service: " );
+            AddJobs();
+            }
+
+        private void AddJobs()
+        {
+            AddHealthMonitoringJob();
+            AddRegistrationsToSOS();
+       
+        }
+
+        public static void AddHealthMonitoringJob()
+        {
+            const string trigger1 = "HealthMonitoring";
+
+            IDoJob myJob = new HealthMonitiorJob();
+            var jobDetail = new JobDetailImpl(trigger1 + Job, Group1, myJob.GetType());
+            var trigger = new CronTriggerImpl(
+                trigger1,
+                Group1,
+                "0 0/1 * * * ?" /* every 10 minutes */
+                ) { TimeZone = TimeZoneInfo.Utc };
+            _scheduler.ScheduleJob(jobDetail, trigger);
+            var nextFireTime = trigger.GetNextFireTimeUtc();
+            if (nextFireTime != null)
+                Log.Info(Group1 + "+" + trigger1, new Exception(nextFireTime.Value.ToString("u")));
+        }
+
+        public class HealthMonitiorJob : IDoJob
+        {
+            public void Execute(IJobExecutionContext context)
+            {
+                Log.Info(DateTime.UtcNow);
+            }
+        }
+
+        private void AddRegistrationsToSOS()
+        {
+            const string trigger1 = "ExportTasksTrigger";
+            const string jobName = trigger1 + Job;
+            IDoJob myJob = new RegistrationsToSOS();
+            var jobDetail = new JobDetailImpl(jobName, Group1, myJob.GetType());
+            var trigger = new CronTriggerImpl(
+                trigger1,
+                Group1,
+                "0 0 2 * * ?"  /* run every day at 2:00 UTC */ ) { TimeZone = TimeZoneInfo.Utc };
+            _scheduler.ScheduleJob(jobDetail, trigger);
+            var nextFireTime = trigger.GetNextFireTimeUtc();
+            if (nextFireTime != null)
+                Log.Debug(Group1 + "+" + trigger1, new Exception(nextFireTime.Value.ToString("u")));  
+        }
+
+        internal class RegistrationsToSOS : IDoJob
+        {
+         //   private readonly IMailService _mail;
+
+            public RegistrationsToSOS()
+            {
+           //     _mail = new MailService();
+            }
+
+            public void ProcessRegistrations()
+            {
+                try
+                {
+                    Log.Info("Sent : " + "res 1");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("ProcessRegistrations:" + ex);
+                }
+                
+            }
+
+            public void Execute(IJobExecutionContext context)
+            {
+                ProcessRegistrations();
+            }
+        }
+        protected override void OnStop()
+        {
+            Log.Info("Stopping Windows Service: ");
+        }
+
+        internal interface IDoJob : IJob
+        {
+
+        }
+    }
+}

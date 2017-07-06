@@ -1,0 +1,81 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NordCar.Carla.Data.Entities;
+using System.Net;
+using System.Net.Sockets;
+using NordCar.Carla.Data.Entities.CustomerPrivate;
+using NordCar.Carla.Data.Implementation;
+using NordCar.Carla.Data.Repository;
+
+namespace NordCar.Carla.Data.Test.Cris
+{
+    [TestClass]
+    public class TestCustomerPrivate
+    {
+        private const string ip = "192.168.16.98";
+        private const int port = 1074;
+        private const string logfile = @"";
+        private ECAPIManagerRepository ccm = null;
+
+
+        private static BasicStructure fillbasics(string booktypes)
+        {
+            return new BasicStructure() { Language = LanguageList.DA, BookTypes = booktypes, IPAddress = ip, CompanyDealId = "", CustomerId = "", ExtraId = "", VoucherCode = "", OrgBookNr = "", StepNr = "" };
+        }
+
+        [TestInitialize]
+        public void Initialize()
+        {
+            ccm = new ECAPIManagerRepository(ip, port, logfile);
+        }
+
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void HelloWorld()
+        {
+            var x = ccm.GetVersion(fillbasics("ECBOOK"));
+            Assert.IsNotNull(x);
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void GetCustomerPrivateNumbers_no_date_Test()
+        {
+            //Should return all customers
+            var x = ccm.GetCustomerPrivateNumbers(fillbasics("ECBOOK"),null);
+            string name = x.Item2.FirstOrDefault(c => c.CustomerPrivateNumber == "10002").FirstName;
+            Assert.AreEqual(name,"TEST");
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void GetCustomerPrivate()
+        {
+            //Should return all customers
+            var x = ccm.GetCustomerPrivate(fillbasics("ECBOOK"),"10565");
+            string name = x.Item2.FirstName;
+            Assert.AreEqual(name, "ANNETTE");
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void GetListCustomerPrivate()
+        {
+            //Should return all customers
+            var x = ccm.GetListCustomerPrivate(fillbasics("ECBOOK"),new List<string>() {"10565"});
+            string name = x.Item2[0].FirstName;
+            Assert.AreEqual(name, "ANNETTE");
+        }
+
+        [TestMethod]
+        [TestCategory("Carla")]
+        public void CreateCustomerPrivateTest()
+        {
+            var x = ccm.CreateCustomerPrivate(fillbasics("ECBOOK"), CustomerPrivateTestFactory.ECCreateCustomer());
+            Assert.IsNotNull(x);
+        }
+    }
+}
